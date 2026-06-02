@@ -174,16 +174,17 @@ function SitemapLink({
   secondary?: string | null;
 }) {
   return (
-    <Box
-      component={NextLink}
+    <NextLink
       href={href}
+      style={{ textDecoration: "none", color: "inherit", display: "block" }}
+    >
+    <Box
       sx={{
         display: "block",
         py: 0.75,
         px: 1,
         mx: -1,
         borderRadius: 1,
-        textDecoration: "none",
         color: "inherit",
         transition: "background-color .15s",
         "&:hover": {
@@ -222,6 +223,7 @@ function SitemapLink({
         </Typography>
       )}
     </Box>
+    </NextLink>
   );
 }
 

@@ -8,9 +8,9 @@
 // Footer import from this module — it has no server-only dependencies, so
 // it's safe to use on either side of the RSC boundary.
 //
-// Each article carries enough unique prose to be a genuine, indexable page
-// (lead + several sections) rather than a thin one-line stub that search
-// engines would ignore.
+// Each article carries a full, unique body (a developed lead plus several
+// sections ending in a conclusion) so that every page is a genuine,
+// indexable piece of content rather than a thin one-line stub.
 
 export type ArticleCategoryKey = "culture" | "travel" | "communities";
 
@@ -104,6 +104,7 @@ export const ARTICLES: Article[] = [
         heading: "A Tradition That Predates the Modern City",
         body: [
           "Long before social networks and group chats, communities were built on physical proximity and mutual reliance. Neighbors raised barns, harvested fields, and cared for one another's children because daily life depended on cooperation. The Filipino concept of bayanihan — neighbors literally carrying a house to a new location — captures this idea perfectly: a shared burden becomes lighter when many hands lift it together.",
+          "That instinct to pool effort was never merely practical. It created bonds of obligation and gratitude that held a village together, a social fabric woven from countless small acts of help given and returned. The architecture of the old town — the shared well, the church square, the marketplace — was really the architecture of belonging.",
         ],
       },
       {
@@ -116,6 +117,18 @@ export const ARTICLES: Article[] = [
         heading: "Why It Still Matters",
         body: [
           "Strong social ties are consistently linked to better health, greater resilience, and deeper happiness. In a society that prizes independence, community offers the counterbalance: a place to be known, to contribute, and to be cared for. The enduring spirit of community is not nostalgia for a simpler time. It is a living answer to a very modern problem — the loneliness that prosperity alone cannot solve.",
+        ],
+      },
+      {
+        heading: "Rebuilding Connection on Purpose",
+        body: [
+          "If community once happened automatically, today it must often be built on purpose. The good news is that it can be. Joining a local festival, volunteering with a cultural group, or simply showing up to the same gathering each month rebuilds the habits of connection one encounter at a time. Each appearance is a small vote for the kind of society we want to live in.",
+        ],
+      },
+      {
+        heading: "The Spirit Endures",
+        body: [
+          "Technology changes, cities grow, and generations come and go, but the spirit of community endures because the need behind it endures. Wherever people decide to carry one another's burdens — literally or figuratively — the bayanihan spirit lives on, proving that even in a fast and fragmented world, we are still at our best together.",
         ],
       },
     ],
@@ -146,6 +159,18 @@ export const ARTICLES: Article[] = [
           "Each time a tradition is shared across a border, it grows a little. New ingredients replace old ones; new venues stand in for village squares. What matters is not perfect preservation but continued participation. Community events and shared calendars make it easier than ever to find the people keeping these traditions alive — and to join them.",
         ],
       },
+      {
+        heading: "When Two Homes Become One",
+        body: [
+          "For migrants, traditions do more than preserve the past — they knit together the place of origin and the place of arrival. A wedding that blends customs from two cultures, a holiday table that holds dishes from both, a festival that adopts a new city as its stage: these hybrids are not compromises but creations, evidence that belonging can be plural rather than singular.",
+        ],
+      },
+      {
+        heading: "A Bridge in Every Celebration",
+        body: [
+          "Every shared tradition is a small bridge thrown across a border. The more often communities celebrate openly and invite others to take part, the more bridges there are — and the smaller the distances between us become. In a divided world, that quiet work of connection may be the most important thing traditions do.",
+        ],
+      },
     ],
   },
   {
@@ -172,6 +197,18 @@ export const ARTICLES: Article[] = [
         heading: "Pride Without Walls",
         body: [
           "Celebrating heritage does not require closing the door on the wider world. The healthiest cultural pride is open-handed: confident enough in its own identity to share it generously and to learn from others. In a globalized world, that balance — rooted but curious — is the mark of a thriving community.",
+        ],
+      },
+      {
+        heading: "Passing It to the Next Generation",
+        body: [
+          "Heritage faces its hardest test with the young, who grow up fluent in the global culture and sometimes distant from their family's roots. Celebrating it deliberately — through language, food, festivals, and story — gives them a choice their parents can offer but not force: the chance to know where they come from and to carry it forward in their own way.",
+        ],
+      },
+      {
+        heading: "Rooted and Open",
+        body: [
+          "A globalized world does not have to erase our differences; handled well, it can make us more aware of them and more grateful for them. To celebrate heritage is to stay rooted while remaining open — to offer the world something distinct rather than dissolving into its average. That balance is how culture survives, and how it keeps the world interesting.",
         ],
       },
     ],
@@ -202,6 +239,18 @@ export const ARTICLES: Article[] = [
           "Communities that gather often are more resilient. They mobilize faster in a crisis, support their members more reliably, and pass their culture on more effectively. That is why finding and attending local events is not a trivial pastime — it is one of the most practical things a person can do to build a life that feels connected and whole.",
         ],
       },
+      {
+        heading: "A Remedy for Modern Loneliness",
+        body: [
+          "Loneliness has become one of the quiet epidemics of modern life, affecting health as seriously as many physical ailments. Community events are a simple, joyful remedy. They give people a standing reason to leave the house, to be among others, and to feel part of something — no diagnosis or appointment required, just a place to show up and belong.",
+        ],
+      },
+      {
+        heading: "Show Up, and Keep Showing Up",
+        body: [
+          "The value of community events compounds with repetition. One visit is pleasant; a habit of attending transforms a stranger into a regular and a city into a home. In an age that makes isolation easy, choosing to show up — again and again — is a small act with an outsized payoff for individuals and the communities they help sustain.",
+        ],
+      },
     ],
   },
   {
@@ -228,6 +277,18 @@ export const ARTICLES: Article[] = [
         heading: "Identity That Adapts and Endures",
         body: [
           "Festivals also evolve, absorbing new influences while holding onto a recognizable core. That flexibility is a strength: a tradition that can bend with the times is one that survives them. By gathering people around a shared celebration, cultural festivals keep identity not frozen but alive — and ready to be carried forward.",
+        ],
+      },
+      {
+        heading: "A Stage for the Whole Community",
+        body: [
+          "Festivals give a community a stage on which to see itself whole. Elders, children, newcomers, and old families gather in one place, and the culture appears not as a private memory but as a public, shared possession. That visibility is powerful: it tells everyone present, and everyone watching, that this identity is alive and worth celebrating.",
+        ],
+      },
+      {
+        heading: "Identity Worth Celebrating",
+        body: [
+          "As long as a community keeps its festivals, it keeps a vivid, living version of itself. Each celebration renews the bond between people and heritage and hands it, intact and joyful, to the next generation. That is the quiet genius of the cultural festival: it preserves identity not by guarding it, but by celebrating it in the open.",
         ],
       },
     ],
@@ -258,6 +319,18 @@ export const ARTICLES: Article[] = [
           "Traditions survive only when each generation chooses to continue them. That choice is easier when the young feel ownership rather than obligation — when they are invited to adapt a custom, not just inherit it. Families and communities that make room for that creativity find their traditions growing stronger with every generation that takes them up.",
         ],
       },
+      {
+        heading: "Healing the Distance Between Eras",
+        body: [
+          "Each generation grows up in a different world, and that gap can leave the young and the old struggling to understand one another. Traditions ease the strain. A grandmother teaching a recipe, a grandfather leading a song, a family preparing together for a festival — these shared acts create understanding that no lecture about respect ever could, because they are built on doing rather than telling.",
+        ],
+      },
+      {
+        heading: "The Unbroken Chain",
+        body: [
+          "A tradition kept is a chain that stays unbroken — each link a generation that chose to hold on and pass it along. When families make room for both reverence and reinvention, that chain grows stronger, not weaker, with time. The customs we keep today are, in the end, the conversations we are still able to have with those who came before and those who will come after.",
+        ],
+      },
     ],
   },
   {
@@ -284,6 +357,18 @@ export const ARTICLES: Article[] = [
         heading: "From Experiences to Belonging",
         body: [
           "A single event is a spark; a calendar full of them is a fire that keeps a community warm year-round. The more opportunities people have to gather around something they care about, the more deeply they belong. Building that steady rhythm of shared experiences is the surest way to build a community that lasts.",
+        ],
+      },
+      {
+        heading: "Resilience Forged Together",
+        body: [
+          "Communities that share experiences in good times are far better equipped for hard ones. The relationships built at festivals, markets, and gatherings become the network people lean on during a crisis — the neighbor who checks in, the group that organizes help, the friends who show up. Shared joy, it turns out, is the foundation of shared strength.",
+        ],
+      },
+      {
+        heading: "Build the Rhythm",
+        body: [
+          "Strong communities are not declared; they are built, experience by experience, until belonging becomes a habit. The practical task for anyone who cares about their community is simply to create and protect those shared moments — and to keep showing up for them. The rhythm of gathering is the heartbeat of any community that means to last.",
         ],
       },
     ],
@@ -314,6 +399,18 @@ export const ARTICLES: Article[] = [
           "Diversity only delivers its benefits when it is paired with genuine contact. Shared events, open festivals, and welcoming community spaces turn neighbors who merely coexist into neighbors who actually understand each other. That understanding is what transforms a diverse population into a diverse community.",
         ],
       },
+      {
+        heading: "The Cost of Sameness",
+        body: [
+          "It is worth remembering what is lost when diversity is suppressed. A monoculture is brittle: it has fewer ideas to draw on, fewer ways to adapt, and a narrower sense of what is possible. The vibrancy of a great city — its food, its art, its energy — is almost always the product of many cultures living side by side. Sameness is not safety; it is stagnation.",
+        ],
+      },
+      {
+        heading: "Diversity as a Shared Project",
+        body: [
+          "Cultural diversity is not self-sustaining — it thrives only where people choose to meet, learn, and celebrate across their differences. That makes it a shared project, one served by every open festival, welcoming neighborhood, and inclusive community event. In today's interconnected world, embracing that project is not just the right thing to do; it is the smart one.",
+        ],
+      },
     ],
   },
   {
@@ -342,6 +439,18 @@ export const ARTICLES: Article[] = [
           "Enrichment runs in both directions. As immigrant communities share their festivals and customs, they also adopt and adapt local ones, creating hybrid traditions that belong fully to neither origin and fully to the new home. This blending is not a dilution of culture — it is how culture has always grown.",
         ],
       },
+      {
+        heading: "New Festivals, New Neighbors",
+        body: [
+          "Immigrant communities also add new dates to the local calendar. A festival once celebrated only in a distant homeland becomes a fixture of the adopted city, drawing curious neighbors and turning a private heritage into a shared public joy. These celebrations introduce locals to new music, dress, and ritual — and, just as importantly, to the people behind them.",
+        ],
+      },
+      {
+        heading: "Stronger for the Mix",
+        body: [
+          "Far from threatening local culture, immigrant communities tend to enlarge it, adding flavors and perspectives that quickly become beloved and indispensable. The cities and neighborhoods that welcome them are, almost without exception, more vibrant for it. Enrichment is the rule, not the exception — and it is one of the great quiet stories of the modern world.",
+        ],
+      },
     ],
   },
   {
@@ -368,6 +477,18 @@ export const ARTICLES: Article[] = [
         heading: "Carrying the Flame Forward",
         body: [
           "Each celebration across continents adds to a global tapestry of identity. By gathering, sharing, and inviting others in, communities ensure their culture is not only preserved but visible and vibrant on the world stage. Cultural pride, expressed openly and joyfully, becomes a gift to everyone who encounters it.",
+        ],
+      },
+      {
+        heading: "From Local Halls to Global Stages",
+        body: [
+          "What once happened only in village plazas now unfolds in city parks, convention centers, and online streams watched around the world. A community's celebration can be local in feeling and global in reach at the same time, linking a small gathering to a worldwide family. The scale has changed; the heart of it — pride, joy, belonging — has not.",
+        ],
+      },
+      {
+        heading: "Pride That Travels",
+        body: [
+          "Cultural pride, celebrated openly across continents, is one of the clearest signs of a community that is thriving rather than merely surviving abroad. Each gathering says the same thing in a dozen places at once: we know who we are, and we are glad to share it. That is pride at its best — generous, visible, and impossible to contain.",
         ],
       },
     ],
@@ -402,6 +523,18 @@ export const ARTICLES: Article[] = [
           "Discovering these places takes a little more effort than booking a famous tour. Local event calendars, community organizations, and word of mouth point the way to celebrations and gatherings that never make the glossy brochures. For the traveler willing to look, this year holds a world of destinations still waiting to be found.",
         ],
       },
+      {
+        heading: "Travel That Gives Back",
+        body: [
+          "There is a practical case for the road less traveled, too. Visitors to lesser-known places spread tourism's benefits to communities that need them, easing the strain on overcrowded hotspots and supporting local families directly. Choosing a hidden destination is not only more rewarding for the traveler; it is often better for the place itself.",
+        ],
+      },
+      {
+        heading: "Go Where Few Think to Look",
+        body: [
+          "The destinations worth exploring this year are not necessarily the ones topping every list — they are the ones still shaped by real life and genuine welcome. For the curious traveler willing to look past the postcard, a world of authentic places waits, each with its own festivals, flavors, and people ready to share them.",
+        ],
+      },
     ],
   },
   {
@@ -425,9 +558,21 @@ export const ARTICLES: Article[] = [
         ],
       },
       {
+        heading: "Why the Shift Is Happening",
+        body: [
+          "Several forces are driving the rise of cultural tourism at once: a generation that values experiences over possessions, easy access to information that surfaces authentic options, and a growing fatigue with cookie-cutter resorts. Together they have changed what travelers consider a trip worth taking — and what they are willing to pay for.",
+        ],
+      },
+      {
         heading: "The Road Ahead",
         body: [
           "As travelers grow more discerning, the destinations that thrive will be those that share their culture genuinely rather than packaging a hollow version of it. The rise of cultural tourism is, at its best, a partnership — visitors gaining understanding, and communities gaining the means to preserve what makes them unique.",
+        ],
+      },
+      {
+        heading: "Culture as the Main Attraction",
+        body: [
+          "Cultural tourism has moved from a niche interest to a defining force in global travel, reshaping how destinations present themselves and how communities benefit from visitors. As the trend deepens, the places that flourish will be those that share their living culture with honesty and pride — making heritage not a backdrop to the trip, but the main attraction.",
         ],
       },
     ],
@@ -453,9 +598,21 @@ export const ARTICLES: Article[] = [
         ],
       },
       {
+        heading: "Jobs and Opportunity",
+        body: [
+          "Festivals create work that ripples well beyond the event itself: vendors and performers, yes, but also the hotels, drivers, cooks, and cleaners who serve the crowds, and the small businesses that gain new customers. For many towns, festival season is the engine that funds the rest of the year and gives young people a reason to build a future at home.",
+        ],
+      },
+      {
         heading: "Investing in the Community",
         body: [
           "The revenue festivals generate can be reinvested in the very culture that draws the crowds — funding performers, preserving venues, and supporting the organizers who make it all happen. Done well, a festival becomes a virtuous cycle: culture attracts visitors, visitors fund culture, and the community grows stronger with each season.",
+        ],
+      },
+      {
+        heading: "Celebration as Economic Strategy",
+        body: [
+          "A well-run festival is far more than a party — it is one of the most effective economic strategies a community can pursue, drawing visitors, spreading spending, and building a reputation that pays dividends long after the music stops. When culture and commerce reinforce each other like this, everyone in the community stands to gain.",
         ],
       },
     ],
@@ -486,6 +643,18 @@ export const ARTICLES: Article[] = [
           "At the heart of authentic travel is human connection. Travelers want to meet the people who actually live in a place, to be welcomed rather than merely served. Community-led events and gatherings make that possible, turning a trip into a genuine exchange rather than a transaction.",
         ],
       },
+      {
+        heading: "The Search for Meaning",
+        body: [
+          "Beneath the trend lies a deeper hunger — for travel that means something. A staged show entertains; a genuine cultural encounter changes how a traveler sees the world. People increasingly return from trips wanting not just photos but understanding, and authentic experiences are the only ones that deliver it. The journey becomes a form of growth, not just a getaway.",
+        ],
+      },
+      {
+        heading: "Authenticity Is the Future",
+        body: [
+          "The appetite for the authentic is not a passing fashion but a lasting shift in what travelers value. Destinations and communities that offer real culture — openly, proudly, and on their own terms — will find an audience eager to meet them. In the end, the most memorable trips are the honest ones, where a visitor is welcomed into something true.",
+        ],
+      },
     ],
   },
   {
@@ -512,6 +681,18 @@ export const ARTICLES: Article[] = [
         heading: "Digital Discovery",
         body: [
           "The journey now begins online, where travelers research events, read reviews, and plan around specific experiences before they ever pack a bag. Community calendars and event platforms have become essential tools, helping visitors find the authentic gatherings that increasingly define a great trip.",
+        ],
+      },
+      {
+        heading: "Community at the Heart of Travel",
+        body: [
+          "A unifying thread runs through today's biggest trends: travelers want connection. Whether they are seeking authenticity, traveling responsibly, or planning around a local festival they found online, what they are really after is a genuine relationship with the places and people they visit. Tourism is becoming less about consuming a destination and more about joining it, however briefly.",
+        ],
+      },
+      {
+        heading: "Meeting Travelers Where They Are",
+        body: [
+          "For destinations and communities, the lesson in these trends is clear: the future favors the authentic, the responsible, and the easily discovered. Those who share their culture honestly and make it simple to find will thrive. The travelers are already moving in this direction — the opportunity lies in being ready to welcome them.",
         ],
       },
     ],
@@ -542,6 +723,18 @@ export const ARTICLES: Article[] = [
           "Because community-based tourism ties prosperity to cultural and environmental health, it gives residents a direct stake in preserving both. Income earned from sharing a festival or a craft funds the continuation of that very tradition. It is a model in which the economy and the culture reinforce one another for the long term.",
         ],
       },
+      {
+        heading: "Beyond the Balance Sheet",
+        body: [
+          "The benefits of community-based tourism are not only financial. It restores pride, revives fading crafts, and gives young people reasons to stay rather than leave for the city. Money earned by sharing a tradition often funds the very thing it celebrates, so the culture grows stronger as the economy does. The returns show up in confidence and continuity as much as in cash.",
+        ],
+      },
+      {
+        heading: "Prosperity That Stays Home",
+        body: [
+          "Community-based tourism offers a model in which travel strengthens a place instead of draining it — keeping prosperity local, empowering the people who live there, and tying economic success to cultural and environmental health. For communities seeking growth on their own terms, it is one of the most promising paths available.",
+        ],
+      },
     ],
   },
   {
@@ -570,6 +763,18 @@ export const ARTICLES: Article[] = [
           "Getting a local event in front of international visitors takes visibility. Online event platforms, community calendars, and social sharing let a small celebration announce itself to the world. When travelers planning a trip can easily discover and trust a local event, distance stops being a barrier to attendance.",
         ],
       },
+      {
+        heading: "Turning Visitors Into Storytellers",
+        body: [
+          "Every international visitor who attends a local event becomes a potential storyteller, carrying the experience home in photos, posts, and recommendations. This word of mouth is the most trusted advertising a community can have, and it costs nothing. A single memorable festival can seed an ever-widening circle of future visitors drawn by stories they cannot resist.",
+        ],
+      },
+      {
+        heading: "Local Roots, Global Reach",
+        body: [
+          "In a connected world, a local event no longer has to stay local. With authenticity at its core and a little visibility online, even a modest community celebration can find an international audience eager for something real. The roots stay firmly in the community; the reach can extend around the world.",
+        ],
+      },
     ],
   },
   {
@@ -593,9 +798,21 @@ export const ARTICLES: Article[] = [
         ],
       },
       {
+        heading: "Putting Communities in Control",
+        body: [
+          "The key to sustainable cultural tourism is letting communities set the terms. When residents decide how their heritage is shared, how many visitors to welcome, and how the proceeds are used, tourism becomes a partnership rather than an extraction. Control is what allows a community to enjoy the benefits of visitors without sacrificing the culture that drew them.",
+        ],
+      },
+      {
         heading: "A Shared Responsibility",
         body: [
           "Sustainable cultural tourism depends on everyone involved. Communities set the terms of how their heritage is shared; visitors travel with respect and curiosity; and platforms that connect them prioritize authenticity over volume. Together, they make it possible for travel to celebrate culture without consuming it.",
+        ],
+      },
+      {
+        heading: "Travel That Protects",
+        body: [
+          "Done thoughtfully, tourism can be one of culture's strongest allies — funding its preservation, renewing pride in it, and carrying it to new audiences with care. The goal is travel that protects rather than consumes, leaving both the visitor and the visited better off. That is sustainability not as a constraint, but as a shared commitment to the future.",
         ],
       },
     ],
@@ -626,6 +843,18 @@ export const ARTICLES: Article[] = [
           "In a connected world, communities themselves become destinations. Platforms that link travelers directly with local events and the people behind them are turning tourism into a two-way relationship. The future belongs to travel that connects — bringing visitors and communities together rather than keeping them apart.",
         ],
       },
+      {
+        heading: "Technology in Service of Experience",
+        body: [
+          "The most exciting use of travel technology is not replacing the journey but enriching it — helping travelers find the right festival, connect with local hosts, and understand what they are seeing. The best tools fade into the background, doing the work of discovery and logistics so that travelers can be fully present for the experience itself.",
+        ],
+      },
+      {
+        heading: "Connection Is the Destination",
+        body: [
+          "The future of travel will be defined less by where we can go and more by how deeply we can connect when we arrive. As technology dissolves the barriers of distance and information, what remains valuable is human contact — the shared meal, the local celebration, the welcome. In a connected world, connection itself becomes the destination.",
+        ],
+      },
     ],
   },
   {
@@ -652,6 +881,18 @@ export const ARTICLES: Article[] = [
         heading: "Access as the Ultimate Privilege",
         body: [
           "What cultural luxury really offers is access — the chance to step inside a community rather than observe it from the outside. That access depends on genuine connection, often made possible by the local organizations and platforms that open the door. In the end, the new luxury is belonging, however briefly, to a place and its people.",
+        ],
+      },
+      {
+        heading: "What Money Cannot Buy",
+        body: [
+          "True cultural luxury rests on something that cannot simply be purchased: trust, relationship, and genuine welcome. A family does not open its table to a stranger because of a price tag, but because of a connection. That is precisely what makes these experiences feel luxurious — they are earned and given, not merely bought, and so they carry a value no five-star rating can match.",
+        ],
+      },
+      {
+        heading: "The Luxury of Belonging",
+        body: [
+          "As comfort becomes commonplace, the rarest and most coveted thing in travel is the feeling of belonging — of being let into a culture rather than kept at its edge. That is the new luxury: not the softest bed, but the warmest welcome. For the travelers who have tasted it, nothing else compares.",
         ],
       },
     ],
@@ -686,6 +927,18 @@ export const ARTICLES: Article[] = [
           "Modern tools have transformed diaspora life. Video calls, social networks, and community platforms make it possible to share a celebration in real time across continents and to find others nearby who share the same roots. For today's diaspora, staying connected is no longer a matter of distance but of intention.",
         ],
       },
+      {
+        heading: "Raising Rooted Children",
+        body: [
+          "One of the deepest challenges of diaspora life is raising children who feel connected to a homeland they may never have lived in. Communities meet this challenge together — through language classes, youth groups, festivals, and family gatherings that let the young taste, hear, and feel their heritage. Connection, in the end, is taught less by instruction than by joyful participation.",
+        ],
+      },
+      {
+        heading: "Distance, Not Disconnection",
+        body: [
+          "For today's diaspora, distance no longer has to mean disconnection. Between the anchors of food, faith, and festival, the support of community, and the reach of technology, staying tied to one's roots has become a matter of choice and effort rather than geography. The homeland, it turns out, can be carried anywhere — and shared with the next generation.",
+        ],
+      },
     ],
   },
   {
@@ -712,6 +965,18 @@ export const ARTICLES: Article[] = [
         heading: "A Connected Voice",
         body: [
           "As communication tools improve, global communities are organizing and speaking with greater unity. They advocate for their members, support their homelands in times of need, and shape public conversations across continents. Their growing influence reflects a simple truth: a connected community is a powerful one.",
+        ],
+      },
+      {
+        heading: "Bridges Between Nations",
+        body: [
+          "Global communities act as living bridges between their countries of origin and the places they settle. They move ideas, investment, and goodwill in both directions, often understanding two worlds well enough to connect them. In an era of division, this quiet diplomacy — carried out by ordinary families and businesses — is one of the most underappreciated forces for cooperation.",
+        ],
+      },
+      {
+        heading: "A Force to Reckon With",
+        body: [
+          "From the economy to the culture to the public square, global communities are no longer peripheral players. Their influence grows with every connection they make and every voice they raise together. As the world becomes more interconnected, these borderless communities will only matter more — and the wisest institutions are already learning to listen.",
         ],
       },
     ],
@@ -742,6 +1007,18 @@ export const ARTICLES: Article[] = [
           "A secure cultural identity is not a barrier to building a new life — it is a foundation for it. People who stay connected to their roots tend to be more confident, more resilient, and more generous contributors to their adopted communities. Supporting that identity benefits everyone, not only those who hold it.",
         ],
       },
+      {
+        heading: "The Role of the Wider Society",
+        body: [
+          "Sustaining cultural identity abroad is not the responsibility of immigrant communities alone. Welcoming neighbors, inclusive schools, and open public spaces make it far easier for newcomers to stay themselves while joining the wider society. When a community feels accepted rather than pressured to disappear, integration and identity reinforce each other instead of competing.",
+        ],
+      },
+      {
+        heading: "Belonging Without Erasing",
+        body: [
+          "The goal of supporting cultural identity abroad is not separation but belonging — the chance to become part of a new home without erasing the heritage that shaped you. Communities, families, and host societies all have a part to play. When they get it right, the result is people who are doubly rooted, and all the stronger for it.",
+        ],
+      },
     ],
   },
   {
@@ -768,6 +1045,18 @@ export const ARTICLES: Article[] = [
         heading: "A Net of Support",
         body: [
           "Community organizations also catch people when they fall — helping newcomers find their footing, supporting families in hardship, and connecting members to opportunities. This web of support is often invisible until it is needed, and it is one of the most valuable things any community can build.",
+        ],
+      },
+      {
+        heading: "The People Behind the Mission",
+        body: [
+          "Behind every effective organization are volunteers and leaders who give their time without expecting much in return. Their dedication is the true engine of lasting impact, and sustaining it matters as much as any program. The healthiest organizations invest in their people — recognizing, training, and renewing them — so that the work can outlast any single generation of leaders.",
+        ],
+      },
+      {
+        heading: "Impact That Outlives Its Founders",
+        body: [
+          "The mark of a great community organization is that its impact endures long after its founders step aside. By turning goodwill into action, building durable structures, and caring for the people who carry the work, these organizations become the backbone of communities that last. They are, quite literally, how a community builds a future for itself.",
         ],
       },
     ],
@@ -798,6 +1087,18 @@ export const ARTICLES: Article[] = [
           "Cross-cultural understanding cannot be learned from a distance. It grows through real contact — shared meals, festivals, conversations, and collaborations. This is why open community events matter so much: they create the everyday encounters from which genuine understanding is built.",
         ],
       },
+      {
+        heading: "Teaching the Next Generation",
+        body: [
+          "Cross-cultural understanding is a skill, and like any skill it is best learned young. Children who grow up around different cultures — through diverse schools, friendships, and community events — develop an ease across difference that serves them for life. Giving the next generation that exposure may be one of the most valuable preparations for the world they will inherit.",
+        ],
+      },
+      {
+        heading: "Understanding as a Bridge",
+        body: [
+          "In a world where cultures meet constantly, the ability to understand across them is no longer optional — it is essential to living and working well together. Built through genuine contact and taught from an early age, cross-cultural understanding turns difference from a wall into a bridge. It may be the quiet skill on which a peaceful, connected society depends.",
+        ],
+      },
     ],
   },
   {
@@ -824,6 +1125,18 @@ export const ARTICLES: Article[] = [
         heading: "Lessons Worth Sharing",
         body: [
           "These stories matter beyond the people who live them. They inspire the next wave of arrivals, challenge stereotypes, and remind everyone what determination and solidarity can achieve. Sharing them widely is one way a community celebrates its journey and encourages others to begin their own.",
+        ],
+      },
+      {
+        heading: "From Surviving to Thriving",
+        body: [
+          "Many success stories follow a familiar arc: arrival and struggle, then a turning point, and finally a generation that moves from surviving to thriving. What makes the difference is rarely luck alone — it is hard work paired with the support of a community that refuses to let its members fail. The triumph is shared, even when one name is on the door.",
+        ],
+      },
+      {
+        heading: "Stories That Light the Way",
+        body: [
+          "The success stories of international communities are more than inspiring anecdotes; they are maps for those who come next. They prove what is possible, challenge low expectations, and remind every newcomer that struggle is not the end of the story. Told and retold, these stories light the way for the next generation to write their own.",
         ],
       },
     ],
@@ -854,6 +1167,18 @@ export const ARTICLES: Article[] = [
           "Perhaps most importantly, technology helps people find their community in the first place. A newcomer to a city can discover local events, restaurants, and organizations online before they have met a single person. These digital doorways turn isolation into belonging, often within days of arrival.",
         ],
       },
+      {
+        heading: "Preserving and Sharing Culture",
+        body: [
+          "Technology does more than connect people in the moment — it helps communities record and share their culture. Recipes, songs, languages, and histories that once risked being lost can now be captured and passed on digitally, reaching members anywhere in the world. A culture documented and shared online is a culture far better positioned to survive.",
+        ],
+      },
+      {
+        heading: "Tools in Service of People",
+        body: [
+          "For all its power, technology is only ever a tool; the connection it enables is what matters. Used well, it shrinks distances, eases the work of organizing, and opens the door to newcomers and the next generation alike. The communities that thrive are those that put these tools in service of people — and the warmth that no app can replace.",
+        ],
+      },
     ],
   },
   {
@@ -880,6 +1205,18 @@ export const ARTICLES: Article[] = [
         heading: "Making Tradition Their Own",
         body: [
           "The traditions that endure are the ones each generation is allowed to reshape. When young people are invited to adapt a celebration, reinterpret a custom, or add their own voice, they take ownership of it. That sense of ownership — not rigid preservation — is what carries heritage forward across the generations.",
+        ],
+      },
+      {
+        heading: "The Quiet Work of Elders",
+        body: [
+          "Much of heritage preservation rests on the elders who remember — the grandparents who carry the recipes, the stories, the songs, and the meaning behind them. Creating chances for them to share that knowledge, before it is lost, is among the most urgent tasks a family or community faces. Their memories are a living archive, and time is never on its side.",
+        ],
+      },
+      {
+        heading: "Each Generation's Choice",
+        body: [
+          "Heritage endures only through a chain of deliberate choices, each generation deciding to learn, to celebrate, and to pass it on. When the young are welcomed as participants and given room to make traditions their own, that chain holds. Preserving heritage, in the end, is less about freezing the past than about keeping it alive in willing hands.",
         ],
       },
     ],
@@ -910,6 +1247,18 @@ export const ARTICLES: Article[] = [
           "Beyond the practical, community networks meet a deeper need — the need to belong. Knowing there are people nearby who understand your language, your customs, and your story eases the loneliness of starting over. That sense of belonging is often what gives newcomers the confidence to build a flourishing new life.",
         ],
       },
+      {
+        heading: "Paying It Forward",
+        body: [
+          "Community networks endure because help tends to circulate. The newcomer guided through their first hard year often becomes, in time, the established member who guides the next arrival. This cycle of paying it forward is what keeps a network strong across generations, turning yesterday's beneficiaries into tomorrow's mentors and binding a community together over time.",
+        ],
+      },
+      {
+        heading: "No One Arrives Alone",
+        body: [
+          "Starting over in a new country is hard, but no one has to do it alone. A strong community network turns a daunting leap into a supported journey — offering knowledge, opportunity, and belonging from the first day. For countless families, it has been the difference between merely getting by and building a flourishing new life.",
+        ],
+      },
     ],
   },
   {
@@ -936,6 +1285,18 @@ export const ARTICLES: Article[] = [
         heading: "Building Bridges That Last",
         body: [
           "The connections made at community events outlast the events themselves. A conversation at a festival can become a friendship; a shared celebration can become a tradition. By bringing people together to celebrate their differences, community events build the bridges on which a diverse and united society depends.",
+        ],
+      },
+      {
+        heading: "Where Children Learn Openness",
+        body: [
+          "Community events are also classrooms for the young. Children who spend a day tasting unfamiliar food, watching new dances, and playing alongside peers from other backgrounds absorb a lesson no textbook delivers as well: that difference is normal, interesting, and nothing to fear. Those early, joyful encounters shape open-minded adults.",
+        ],
+      },
+      {
+        heading: "Celebration as Common Ground",
+        body: [
+          "Diversity becomes a strength only when people actually come together, and community events are where that happens — turning a mix of backgrounds into a shared celebration and a set of lasting bonds. They are common ground in the truest sense: a place where everyone is invited, and everyone leaves a little more connected than they arrived.",
         ],
       },
     ],

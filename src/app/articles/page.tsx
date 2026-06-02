@@ -172,9 +172,15 @@ export default function ArticlesIndexPage() {
                 <Grid container spacing={{ xs: 1.5, md: 2 }}>
                   {articles.map((a) => (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={a.slug}>
-                      <Box
-                        component={NextLink}
+                      <NextLink
                         href={articleUrl(a.slug)}
+                        style={{
+                          textDecoration: "none",
+                          display: "block",
+                          height: "100%",
+                        }}
+                      >
+                      <Box
                         sx={{
                           display: "flex",
                           flexDirection: "column",
@@ -183,7 +189,6 @@ export default function ArticlesIndexPage() {
                           borderRadius: 2.5,
                           bgcolor: "#fff",
                           border: "1px solid #f1e3c8",
-                          textDecoration: "none",
                           transition: "all .25s ease",
                           "&:hover": {
                             borderColor: "#fbbf24",
@@ -242,6 +247,7 @@ export default function ArticlesIndexPage() {
                           />
                         </Box>
                       </Box>
+                      </NextLink>
                     </Grid>
                   ))}
                 </Grid>

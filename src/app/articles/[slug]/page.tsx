@@ -8,6 +8,12 @@
 //
 // Content lives in src/lib/articles.ts (the same module the footer reads),
 // so the backlinks in the footer and the pages here can never drift apart.
+//
+// NOTE: this is a Server Component, so we must NOT pass `component={NextLink}`
+// to MUI components — passing a function across the server→client boundary
+// throws "Functions cannot be passed directly to Client Components". Instead
+// we render <NextLink> directly (string/style props only) and nest the
+// styled <Box> inside it.
 
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -207,32 +213,29 @@ export default async function ArticlePage({ params }: PageProps) {
                 color: "#64748b",
               }}
             >
-              <Box
-                component={NextLink}
-                href="/"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.25,
-                  color: "#64748b",
-                  textDecoration: "none",
-                  "&:hover": { color: ACCENT },
-                }}
-              >
-                <HomeRoundedIcon sx={{ fontSize: 15 }} /> Home
-              </Box>
+              <NextLink href="/" style={{ textDecoration: "none" }}>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.25,
+                    color: "#64748b",
+                    "&:hover": { color: ACCENT },
+                  }}
+                >
+                  <HomeRoundedIcon sx={{ fontSize: 15 }} /> Home
+                </Box>
+              </NextLink>
               <ChevronRightRoundedIcon sx={{ fontSize: 15 }} />
-              <Box
-                component={NextLink}
-                href="/articles"
-                sx={{
-                  color: "#64748b",
-                  textDecoration: "none",
-                  "&:hover": { color: ACCENT },
-                }}
-              >
-                Articles
-              </Box>
+              <NextLink href="/articles" style={{ textDecoration: "none" }}>
+                <Box
+                  component="span"
+                  sx={{ color: "#64748b", "&:hover": { color: ACCENT } }}
+                >
+                  Articles
+                </Box>
+              </NextLink>
               <ChevronRightRoundedIcon sx={{ fontSize: 15 }} />
               <Box component="span" sx={{ color: "#0f172a", fontWeight: 600 }}>
                 {category?.title}
@@ -241,27 +244,27 @@ export default async function ArticlePage({ params }: PageProps) {
 
             {/* Category eyebrow */}
             {category && (
-              <Box
-                component={NextLink}
-                href="/articles"
-                sx={{
-                  display: "inline-block",
-                  mb: 1.5,
-                  px: 1.5,
-                  py: 0.5,
-                  borderRadius: 999,
-                  fontFamily: FONT_HEAD,
-                  fontSize: 12,
-                  fontWeight: 800,
-                  letterSpacing: "0.04em",
-                  textTransform: "uppercase",
-                  color: "#fff",
-                  textDecoration: "none",
-                  background: ACCENT_GRADIENT,
-                }}
-              >
-                {category.title}
-              </Box>
+              <NextLink href="/articles" style={{ textDecoration: "none" }}>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-block",
+                    mb: 1.5,
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 999,
+                    fontFamily: FONT_HEAD,
+                    fontSize: 12,
+                    fontWeight: 800,
+                    letterSpacing: "0.04em",
+                    textTransform: "uppercase",
+                    color: "#fff",
+                    background: ACCENT_GRADIENT,
+                  }}
+                >
+                  {category.title}
+                </Box>
+              </NextLink>
             )}
 
             {/* H1 */}
@@ -275,6 +278,7 @@ export default async function ArticlePage({ params }: PageProps) {
                 letterSpacing: "-0.02em",
                 color: "#0f172a",
                 mb: 2,
+                mt: 1.5,
               }}
             >
               {article.title}
@@ -354,34 +358,36 @@ export default async function ArticlePage({ params }: PageProps) {
             }}
           >
             {siteLinks.map((l) => (
-              <Box
+              <NextLink
                 key={l.href}
-                component={NextLink}
                 href={l.href}
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  px: 2,
-                  py: 1,
-                  borderRadius: 999,
-                  fontFamily: FONT_HEAD,
-                  fontSize: 13.5,
-                  fontWeight: 700,
-                  color: ACCENT,
-                  textDecoration: "none",
-                  bgcolor: "#fff",
-                  border: "1px solid #fde2b3",
-                  transition: "all .2s ease",
-                  "&:hover": {
-                    bgcolor: "#fff4dd",
-                    transform: "translateY(-1px)",
-                  },
-                }}
+                style={{ textDecoration: "none" }}
               >
-                {l.label}
-                <ChevronRightRoundedIcon sx={{ fontSize: 16 }} />
-              </Box>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    px: 2,
+                    py: 1,
+                    borderRadius: 999,
+                    fontFamily: FONT_HEAD,
+                    fontSize: 13.5,
+                    fontWeight: 700,
+                    color: ACCENT,
+                    bgcolor: "#fff",
+                    border: "1px solid #fde2b3",
+                    transition: "all .2s ease",
+                    "&:hover": {
+                      bgcolor: "#fff4dd",
+                      transform: "translateY(-1px)",
+                    },
+                  }}
+                >
+                  {l.label}
+                  <ChevronRightRoundedIcon sx={{ fontSize: 16 }} />
+                </Box>
+              </NextLink>
             ))}
           </Box>
 
@@ -404,55 +410,60 @@ export default async function ArticlePage({ params }: PageProps) {
               <Grid container spacing={{ xs: 1.5, md: 2 }}>
                 {related.map((r) => (
                   <Grid size={{ xs: 12, sm: 6 }} key={r.slug}>
-                    <Box
-                      component={NextLink}
+                    <NextLink
                       href={articleUrl(r.slug)}
-                      sx={{
+                      style={{
+                        textDecoration: "none",
                         display: "block",
                         height: "100%",
-                        p: { xs: 2, md: 2.25 },
-                        borderRadius: 2.5,
-                        bgcolor: "#fff",
-                        border: "1px solid #f1e3c8",
-                        textDecoration: "none",
-                        transition: "all .25s ease",
-                        "&:hover": {
-                          borderColor: "#fbbf24",
-                          boxShadow: "0 10px 24px rgba(15,23,42,0.08)",
-                          transform: "translateY(-2px)",
-                          "& .ra-title": { color: ACCENT },
-                        },
                       }}
                     >
-                      <Typography
-                        className="ra-title"
+                      <Box
                         sx={{
-                          fontFamily: FONT_HEAD,
-                          fontWeight: 800,
-                          fontSize: 15.5,
-                          lineHeight: 1.3,
-                          color: "#0f172a",
-                          mb: 0.75,
-                          transition: "color .2s ease",
+                          height: "100%",
+                          p: { xs: 2, md: 2.25 },
+                          borderRadius: 2.5,
+                          bgcolor: "#fff",
+                          border: "1px solid #f1e3c8",
+                          transition: "all .25s ease",
+                          "&:hover": {
+                            borderColor: "#fbbf24",
+                            boxShadow: "0 10px 24px rgba(15,23,42,0.08)",
+                            transform: "translateY(-2px)",
+                            "& .ra-title": { color: ACCENT },
+                          },
                         }}
                       >
-                        {r.title}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontFamily: FONT_BODY,
-                          fontSize: 13,
-                          lineHeight: 1.5,
-                          color: "#64748b",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                      >
-                        {r.description}
-                      </Typography>
-                    </Box>
+                        <Typography
+                          className="ra-title"
+                          sx={{
+                            fontFamily: FONT_HEAD,
+                            fontWeight: 800,
+                            fontSize: 15.5,
+                            lineHeight: 1.3,
+                            color: "#0f172a",
+                            mb: 0.75,
+                            transition: "color .2s ease",
+                          }}
+                        >
+                          {r.title}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontFamily: FONT_BODY,
+                            fontSize: 13,
+                            lineHeight: 1.5,
+                            color: "#64748b",
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {r.description}
+                        </Typography>
+                      </Box>
+                    </NextLink>
                   </Grid>
                 ))}
               </Grid>

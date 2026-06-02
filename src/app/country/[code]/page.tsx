@@ -278,27 +278,26 @@ export default async function CountryEventsPage({ params }: PageProps) {
               >
                 Be the first to know when new events are announced.
               </Typography>
-              <Box
-                component={NextLink}
-                href="/browse-events"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  px: 2.5,
-                  py: 1.25,
-                  borderRadius: 999,
-                  fontFamily: FONT_HEAD,
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: "#fff",
-                  textDecoration: "none",
-                  background: ACCENT_GRADIENT,
-                  boxShadow: "0 8px 18px rgba(247,127,0,0.3)",
-                }}
-              >
-                Browse all events
-              </Box>
+              <NextLink href="/browse-events" style={{ textDecoration: "none" }}>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    px: 2.5,
+                    py: 1.25,
+                    borderRadius: 999,
+                    fontFamily: FONT_HEAD,
+                    fontSize: 13,
+                    fontWeight: 800,
+                    color: "#fff",
+                    background: ACCENT_GRADIENT,
+                    boxShadow: "0 8px 18px rgba(247,127,0,0.3)",
+                  }}
+                >
+                  Browse all events
+                </Box>
+              </NextLink>
             </Box>
           ) : (
             <Grid container spacing={{ xs: 2, md: 3 }}>
