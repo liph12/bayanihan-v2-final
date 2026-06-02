@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { serverGet } from "@/lib/serverFetch";
 import RestaurantListContent from "@/components/restaurant/RestaurantListContent";
 import type { Restaurant } from "@/types";
+import { Suspense } from "react";
 
 interface RestaurantsResponse {
   data?: { restaurant?: Restaurant[] } | Restaurant[];
@@ -15,8 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/restaurant" },
   openGraph: {
     title: "Filipino Restaurants Worldwide",
-    description:
-      "Discover authentic Filipino restaurants around the world.",
+    description: "Discover authentic Filipino restaurants around the world.",
     url: "/restaurant",
     type: "website",
   },
@@ -31,7 +31,7 @@ async function getRestaurants(): Promise<Restaurant[]> {
   try {
     const data = await serverGet<RestaurantsResponse | Restaurant[]>(
       "restaurants",
-      { revalidate: 60 }
+      { revalidate: 60 },
     );
     if (Array.isArray(data)) return data;
     const d = data as RestaurantsResponse;
@@ -47,5 +47,9 @@ async function getRestaurants(): Promise<Restaurant[]> {
 
 export default async function RestaurantsPage() {
   const restaurants = await getRestaurants();
-  return <RestaurantListContent initialRestaurants={restaurants} />;
+  return (
+    <Suspense>
+      <RestaurantListContent initialRestaurants={restaurants} />
+    </Suspense>
+  );
 }
