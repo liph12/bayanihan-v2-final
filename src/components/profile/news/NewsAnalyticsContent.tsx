@@ -14,6 +14,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 import EmojiEventsOutlinedIcon from "@mui/icons-material/EmojiEventsOutlined";
+import TodayOutlinedIcon from "@mui/icons-material/TodayOutlined";
 import RefreshOutlinedIcon from "@mui/icons-material/RefreshOutlined";
 import LaunchOutlinedIcon from "@mui/icons-material/LaunchOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
@@ -34,6 +35,20 @@ interface StatsApiResponse {
 const formatNum = (n: number) => Number(n || 0).toLocaleString();
 const articleViews = (a: NewsArticle | null | undefined) =>
   Number(a?.views_count ?? a?.views ?? 0) || 0;
+
+// True when the article's created date falls on the current local day.
+const isCreatedToday = (a: NewsArticle | null | undefined) => {
+  const raw = a?.created_at ?? a?.date ?? a?.published_at;
+  if (!raw) return false;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  );
+};
 
 interface MetricCardProps {
   icon: ReactNode;
@@ -344,15 +359,18 @@ export default function NewsAnalyticsContent() {
     totalArticles: number;
     totalViews: number;
     avgViews: number;
+    createdToday: number;
     top: NewsArticle | null;
     sortedByViews: NewsArticle[];
   }>(() => {
     const totalArticles = articles.length;
     let totalViews = 0;
+    let createdToday = 0;
     let top: NewsArticle | null = null;
     articles.forEach((a) => {
       const v = articleViews(a);
       totalViews += v;
+      if (isCreatedToday(a)) createdToday += 1;
       if (!top || v > articleViews(top)) top = a;
     });
     const avgViews = totalArticles
@@ -361,7 +379,14 @@ export default function NewsAnalyticsContent() {
     const sortedByViews = [...articles].sort(
       (a, b) => articleViews(b) - articleViews(a)
     );
-    return { totalArticles, totalViews, avgViews, top, sortedByViews };
+    return {
+      totalArticles,
+      totalViews,
+      avgViews,
+      createdToday,
+      top,
+      sortedByViews,
+    };
   }, [articles]);
 
   const topMaxViews = articleViews(stats.sortedByViews[0]);
@@ -576,7 +601,18 @@ export default function NewsAnalyticsContent() {
               label="Articles"
               value={formatNum(stats.totalArticles)}
               accent="#0ea5e9"
-              sub="all statuses"
+              sub="total news articles created"
+            />
+            <MetricCard
+              icon={<TodayOutlinedIcon />}
+              label="Created Today"
+              value={formatNum(stats.createdToday)}
+              accent="#ec4899"
+              sub={
+                stats.createdToday === 1
+                  ? "new article today"
+                  : "new articles today"
+              }
             />
             <MetricCard
               icon={<VisibilityOutlinedIcon />}
