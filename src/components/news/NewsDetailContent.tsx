@@ -27,7 +27,6 @@ import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import merchAds from "@/assets/ads/merch_ads.gif";
 import merchAds2 from "@/assets/ads/merch_ads2.gif";
 import { parseSummary, parseTags, slugifyTitle } from "@/lib/newsHelpers";
-import { useHeaderHidden } from "@/providers/HeaderVisibilityProvider";
 import type { NewsArticle } from "@/types";
 
 function formatDate(dateStr?: string | null): string {
@@ -89,11 +88,6 @@ export default function NewsDetailContent({
 }: NewsDetailContentProps) {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
-
-  // Shared with the header (see HeaderVisibilityProvider): when the header
-  // slides away, the breadcrumb pins to the very top and the sidebar rises
-  // with it; otherwise both sit below the ~70px header.
-  const headerHidden = useHeaderHidden();
 
   const paragraphs = useMemo(
     () => parseSummary(article.summary),
@@ -182,15 +176,14 @@ export default function NewsDetailContent({
         />
       </Box>
 
-      {/* ===== Breadcrumbs top bar (pins to top when the header hides) ===== */}
+      {/* ===== Breadcrumbs top bar (steady, sticky just below the header) ===== */}
       <Box
         sx={{
           position: "sticky",
-          top: headerHidden ? 0 : 70,
+          top: 70,
           zIndex: 999,
           bgcolor: "#fff",
           borderBottom: "1px solid #e5e7eb",
-          transition: "top 0.3s ease",
         }}
       >
         <Container sx={{ py: { xs: 1.25, md: 1.5 } }}>
@@ -643,17 +636,9 @@ export default function NewsDetailContent({
             )}
           </Grid>
 
-          {/* ============== Sticky Sidebar ============== */}
+          {/* ============== Sticky Sidebar (steady) ============== */}
           <Grid size={{ xs: 12, md: 4 }}>
-            <Box
-              sx={{
-                position: "sticky",
-                // Rises to sit just under the breadcrumb when the header hides,
-                // drops back below header + breadcrumb when it's shown.
-                top: headerHidden ? 64 : 130,
-                transition: "top 0.3s ease",
-              }}
-            >
+            <Box sx={{ position: "sticky", top: 130 }}>
               {related.length > 0 && (
                 <>
                   <Typography

@@ -33,7 +33,6 @@ import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { useAuthProvider } from "@/providers/AuthProvider";
-import { useHeaderHidden } from "@/providers/HeaderVisibilityProvider";
 
 interface NavItem {
   label: string;
@@ -100,11 +99,6 @@ export default function Appbar() {
   const u = userData as UserShape | null;
   const isEventSubdomain = false;
 
-  // Shared hide-on-scroll state (see HeaderVisibilityProvider). It's only ever
-  // true on news article detail pages; everywhere else it stays false, so the
-  // header keeps its always-visible sticky behavior.
-  const hidden = useHeaderHidden();
-
   const handleLogout = () => {
     setAccountAnchor(null);
     setOpen(false);
@@ -159,9 +153,6 @@ export default function Appbar() {
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
         borderBottom: "1px solid rgba(15,23,42,0.06)",
         boxShadow: "0 1px 12px rgba(15,23,42,0.04)",
-        transform: hidden ? "translateY(-100%)" : "translateY(0)",
-        transition: "transform 0.3s ease",
-        willChange: "transform",
       }}
     >
       <Box
