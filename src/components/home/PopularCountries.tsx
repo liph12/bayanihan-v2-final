@@ -31,27 +31,30 @@ const sx = {
     display: "flex",
     flexWrap: "wrap",
     justifyContent: "center",
-    gap: 1.5,
-    rowGap: 2,
+    gap: { xs: 1, md: 1.5 },
     mt: 2,
   },
+  // Each chip IS the link (the flex item), so sizing applies to the right
+  // element. Chips size to their own content and wrap/center — handles names
+  // from "Oman" to "United Arab Emirates" cleanly with no truncation or
+  // overflow on mobile.
   chip: {
     display: "inline-flex",
     alignItems: "center",
     gap: 1,
-    px: 1.4,
-    py: 1,
+    px: { xs: 1.2, md: 1.4 },
+    py: { xs: 0.75, md: 1 },
     borderRadius: 22,
     background: "rgba(0,0,0,0.5)",
     color: "#fff",
     textDecoration: "none",
     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-    fontSize: 15.5,
+    fontSize: { xs: 13, sm: 14, md: 15.5 },
     fontFamily: "var(--font-outfit)",
-    textAlign: "left" as const,
-    width: { xs: "48%", sm: "30%", md: "auto", lg: "auto" },
-    margin: { xs: "0 2px 10px", sm: "0 1% 10px", md: "0" },
-    transition: "color .2s",
+    whiteSpace: "nowrap" as const,
+    lineHeight: 1.2,
+    maxWidth: "100%",
+    transition: "color .2s, background .2s",
     "&:hover": {
       background: "rgba(255, 255, 255, 0.5)",
       color: "#000",
@@ -63,6 +66,7 @@ const sx = {
     borderRadius: 2,
     objectFit: "cover" as const,
     display: "block" as const,
+    flexShrink: 0,
   },
 };
 
@@ -116,17 +120,11 @@ export default function PopularCountries({
           const flagSrc = `https://flagcdn.com/w20/${code}.png`;
           const flag2x = `https://flagcdn.com/w40/${code}.png 2x`;
           return (
-            <NextLink
-              key={c.code}
-              href={href}
-              style={{ textDecoration: "none" }}
-            >
-              <Box sx={sx.chip}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={flagSrc} srcSet={flag2x} alt="" style={sx.flag} />
-                <span>{c.name}</span>
-              </Box>
-            </NextLink>
+            <Box component={NextLink} key={c.code} href={href} sx={sx.chip}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={flagSrc} srcSet={flag2x} alt="" style={sx.flag} />
+              <span>{c.name}</span>
+            </Box>
           );
         })}
       </Box>
