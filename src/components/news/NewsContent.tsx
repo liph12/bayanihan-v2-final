@@ -544,15 +544,31 @@ export default function NewsContent({ initial }: NewsContentProps) {
     return ["All", ...Array.from(set)];
   }, [items]);
 
-  // Split articles into sections
-  const heroBig = items[0];
-  const heroSmall = items.slice(1, 5);
-  const remaining = items.slice(5);
+  // De-duplicate first: the API returns the same article (same id/slug) on
+  // more than one page, which showed up as doubled cards. Keep the first
+  // occurrence of each id (falling back to slug/title).
+  const uniqueItems = useMemo(() => {
+    const seen = new Set<string>();
+    const out: NewsArticle[] = [];
+    for (const a of items) {
+      const key = String(a.id ?? a.slug ?? a.title ?? "");
+      if (key && seen.has(key)) continue;
+      if (key) seen.add(key);
+      out.push(a);
+    }
+    return out;
+  }, [items]);
 
-  // Popular news (filtered by category, sorted by views, paginated)
-  const popularPool = remaining.length > 0 ? remaining : items;
+  // Split articles into sections
+  const heroBig = uniqueItems[0];
+  const heroSmall = uniqueItems.slice(1, 5);
+
+  // Popular news: every unique article ranked by views (most-viewed first), so
+  // the single most-viewed article always leads. Filtered by category, then
+  // paginated below. (Previously excluded the hero set, which hid the genuine
+  // top articles from this list.)
   const popularFiltered = useMemo(() => {
-    return popularPool
+    return uniqueItems
       .filter((a) => activeCategory === "All" || a.category === activeCategory)
       .slice()
       .sort(
@@ -560,7 +576,7 @@ export default function NewsContent({ initial }: NewsContentProps) {
           (Number(b?.views_count ?? b?.views ?? 0) || 0) -
           (Number(a?.views_count ?? a?.views ?? 0) || 0)
       );
-  }, [popularPool, activeCategory]);
+  }, [uniqueItems, activeCategory]);
   const popularPageCount = Math.max(
     1,
     Math.ceil(popularFiltered.length / POPULAR_PER_PAGE)
@@ -584,7 +600,7 @@ export default function NewsContent({ initial }: NewsContentProps) {
     popularStart + POPULAR_PER_PAGE
   );
 
-  const latestArticles = items.slice(0, 5);
+  const latestArticles = uniqueItems.slice(0, 10);
 
   // ----- Render -----
 
