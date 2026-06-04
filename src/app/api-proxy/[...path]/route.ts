@@ -78,23 +78,26 @@ async function proxy(
     }
   });
 
-  // Body handling: for methods that have one, pass the raw Web stream.
-  // For GET / HEAD, no body.
+  // Body handling: for methods that have one, buffer the body fully before
+  // forwarding. We deliberately do NOT stream `req.body` here: streaming a
+  // body while stripping `content-length` (see STRIP_REQUEST_HEADERS) forces
+  // `Transfer-Encoding: chunked` on the upstream request. The PHP/nginx
+  // origin behind Cloudflare cannot reliably parse a chunked multipart upload
+  // (news poster images), returns a malformed/empty response, and Cloudflare
+  // surfaces it as a 520. Buffering lets fetch set a correct Content-Length
+  // and send a normal, non-chunked request.
   const method = req.method.toUpperCase();
   const hasBody = method !== "GET" && method !== "HEAD";
   let body: BodyInit | undefined;
   if (hasBody) {
-    body = req.body ?? undefined;
+    const buf = await req.arrayBuffer();
+    body = buf.byteLength > 0 ? buf : undefined;
   }
 
   const upstream = await fetch(upstreamUrl, {
     method,
     headers,
     body,
-    // Required when streaming a Request body to fetch in modern runtimes.
-    // @ts-expect-error — `duplex` is a valid fetch option in undici but
-    // missing from older TS lib.dom typings.
-    duplex: hasBody ? "half" : undefined,
     redirect: "manual",
   });
 

@@ -57,6 +57,7 @@ interface MetricCardProps {
   sub?: ReactNode;
   accent: string;
   subTruncate?: boolean;
+  href?: string;
 }
 
 function MetricCard({
@@ -66,9 +67,27 @@ function MetricCard({
   sub,
   accent,
   subTruncate,
+  href,
 }: MetricCardProps) {
+  const linkProps = href
+    ? {
+        component: Link,
+        href,
+        sx: {
+          textDecoration: "none",
+          cursor: "pointer",
+          transition: "all 0.2s ease",
+          "&:hover": {
+            borderColor: "#cbd5e1",
+            transform: "translateY(-1px)",
+            boxShadow: "0 8px 20px rgba(15,23,42,0.08)",
+          },
+        },
+      }
+    : {};
   return (
     <Paper
+      {...linkProps}
       sx={{
         flex: 1,
         p: 2.25,
@@ -80,6 +99,8 @@ function MetricCard({
         minWidth: 0,
         bgcolor: "#fff",
         boxShadow: "0 4px 16px rgba(15,23,42,0.04)",
+        color: "inherit",
+        ...(linkProps.sx || {}),
       }}
     >
       <Box
@@ -289,9 +310,30 @@ export default function NewsAnalyticsContent() {
         return Array.isArray(nested) ? nested : [];
       };
 
+      // Fetch a single page, retrying a few times before giving up. A page
+      // that silently fell back to [] used to drop a whole page of articles,
+      // making the totals fluctuate between reloads — so here we retry and,
+      // if it still fails, throw so the caller can surface a real error
+      // instead of rendering partial (and inconsistent) stats.
+      const fetchPage = async (page: number): Promise<NewsArticle[]> => {
+        let lastErr: unknown;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            const r = await AxiosInstance.get<ListApiResponse>(
+              `news-articles-v2?page=${page}`
+            );
+            return extract(r?.data ?? {});
+          } catch (e) {
+            lastErr = e;
+          }
+        }
+        throw lastErr;
+      };
+
       // Fetch page 1, learn the total page count from meta, then fetch the
-      // remaining pages in parallel. This guarantees the analytics cards and
-      // leaderboard reflect every article, not just the first page.
+      // remaining pages with bounded concurrency so we don't hammer (and get
+      // rate-limited by) the API. Every page must succeed, guaranteeing the
+      // cards and leaderboard reflect the full, stable article set.
       const firstResp = await AxiosInstance.get<ListApiResponse>(
         "news-articles-v2?page=1"
       );
@@ -301,19 +343,34 @@ export default function NewsAnalyticsContent() {
 
       let allRaw: NewsArticle[] = firstList;
       if (lastPage > 1) {
-        const restResponses = await Promise.all(
-          Array.from({ length: lastPage - 1 }, (_, i) =>
-            AxiosInstance.get<ListApiResponse>(
-              `news-articles-v2?page=${i + 2}`
-            )
-              .then((r) => extract(r?.data ?? {}))
-              .catch(() => [] as NewsArticle[])
-          )
-        );
-        allRaw = firstList.concat(...restResponses);
+        const pages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+        const CONCURRENCY = 4;
+        for (let i = 0; i < pages.length; i += CONCURRENCY) {
+          const batch = pages.slice(i, i + CONCURRENCY);
+          const results = await Promise.all(batch.map((p) => fetchPage(p)));
+          allRaw = allRaw.concat(...results);
+        }
       }
 
-      const normalized = allRaw
+      // Dedupe by id (falling back to slug) so overlapping pages can't
+      // inflate the counts.
+      const seen = new Set<string>();
+      const deduped: NewsArticle[] = [];
+      allRaw.forEach((a) => {
+        const key =
+          a?.id != null
+            ? `id:${a.id}`
+            : a?.slug
+            ? `slug:${a.slug}`
+            : null;
+        if (key) {
+          if (seen.has(key)) return;
+          seen.add(key);
+        }
+        deduped.push(a);
+      });
+
+      const normalized = deduped
         .map((a) => normalizeArticle(a))
         .filter((a): a is NewsArticle => !!a);
 
@@ -639,6 +696,13 @@ export default function NewsAnalyticsContent() {
               accent="#f59e0b"
               sub={stats.top?.title || "—"}
               subTruncate
+              href={
+                stats.top
+                  ? `/news/${
+                      stats.top.slug || slugifyTitle(stats.top.title || "")
+                    }`
+                  : undefined
+              }
             />
           </Stack>
 
