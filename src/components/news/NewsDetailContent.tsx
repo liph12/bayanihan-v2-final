@@ -27,6 +27,7 @@ import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import merchAds from "@/assets/ads/merch_ads.gif";
 import merchAds2 from "@/assets/ads/merch_ads2.gif";
 import { parseSummary, parseTags, slugifyTitle } from "@/lib/newsHelpers";
+import { useHideOnScroll } from "@/lib/useHideOnScroll";
 import type { NewsArticle } from "@/types";
 
 function formatDate(dateStr?: string | null): string {
@@ -88,6 +89,11 @@ export default function NewsDetailContent({
 }: NewsDetailContentProps) {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
+
+  // The header slides away on scroll-down (same logic, in Appbar). When it's
+  // hidden, pin the breadcrumb to the very top; otherwise sit just below the
+  // ~70px header.
+  const headerHidden = useHideOnScroll(true);
 
   const paragraphs = useMemo(
     () => parseSummary(article.summary),
@@ -176,14 +182,15 @@ export default function NewsDetailContent({
         />
       </Box>
 
-      {/* ===== Breadcrumbs top bar (sticky below appbar) ===== */}
+      {/* ===== Breadcrumbs top bar (pins to top when the header hides) ===== */}
       <Box
         sx={{
           position: "sticky",
-          top: 70,
+          top: headerHidden ? 0 : 70,
           zIndex: 999,
           bgcolor: "#fff",
           borderBottom: "1px solid #e5e7eb",
+          transition: "top 0.3s ease",
         }}
       >
         <Container sx={{ py: { xs: 1.25, md: 1.5 } }}>

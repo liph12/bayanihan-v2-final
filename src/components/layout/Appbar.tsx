@@ -33,6 +33,7 @@ import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { useAuthProvider } from "@/providers/AuthProvider";
+import { useHideOnScroll } from "@/lib/useHideOnScroll";
 
 interface NavItem {
   label: string;
@@ -99,6 +100,13 @@ export default function Appbar() {
   const u = userData as UserShape | null;
   const isEventSubdomain = false;
 
+  // On news article detail pages (/news/<slug>) the header slides away on
+  // scroll-down so the breadcrumb can pin to the very top (see
+  // NewsDetailContent). The /news index and every other page keep the
+  // always-visible sticky header.
+  const enableHideOnScroll = !!pathname && pathname.startsWith("/news/");
+  const hidden = useHideOnScroll(enableHideOnScroll);
+
   const handleLogout = () => {
     setAccountAnchor(null);
     setOpen(false);
@@ -153,6 +161,9 @@ export default function Appbar() {
         WebkitBackdropFilter: "blur(20px) saturate(180%)",
         borderBottom: "1px solid rgba(15,23,42,0.06)",
         boxShadow: "0 1px 12px rgba(15,23,42,0.04)",
+        transform: hidden ? "translateY(-100%)" : "translateY(0)",
+        transition: "transform 0.3s ease",
+        willChange: "transform",
       }}
     >
       <Box
