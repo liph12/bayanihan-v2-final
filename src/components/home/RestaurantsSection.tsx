@@ -141,6 +141,18 @@ export default function RestaurantsSection({
               },
             },
           },
+          // Touch / mobile can't hover, so present the expanded state by
+          // default: a wider card with the details and "View restaurant"
+          // button always visible.
+          "@media (hover: none), (max-width: 600px)": {
+            width: { xs: 240, sm: 300 },
+            "& .rest-name": { WebkitLineClamp: 3 },
+            "& .rest-extra": {
+              opacity: 1,
+              transform: "translateY(0)",
+              pointerEvents: "auto",
+            },
+          },
         }}
       >
         {image ? (

@@ -84,6 +84,11 @@ export default function StoryRail({
     const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (mql.matches) return;
 
+    // Mobile / touch devices get a static, manually-scrolled rail (no
+    // auto-scroll) so the cards' details and action button stay put and
+    // readable instead of drifting past.
+    if (window.matchMedia("(hover: none), (max-width: 600px)").matches) return;
+
     let hovered = false;
     let rafId = 0;
     let lastTs = performance.now();
