@@ -5,6 +5,7 @@ import ThemeRegistry from "@/theme/ThemeRegistry";
 import LocaleProvider from "@/providers/LocaleProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import AppChrome from "@/components/layout/AppChrome";
+import GlobalLoader from "@/components/layout/GlobalLoader";
 import "./globals.css";
 
 const urbanist = Urbanist({
@@ -174,6 +175,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
         <ThemeRegistry>
+          <GlobalLoader />
           <AuthProvider>
             <LocaleProvider>
               <AppChrome>{children}</AppChrome>
