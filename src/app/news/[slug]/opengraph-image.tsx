@@ -12,9 +12,11 @@ export const alt = "Bayanihan News article";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-interface DetailApiResponse {
+// The single-article endpoint returns the article at the top level, not
+// wrapped in { data } like the list endpoint. Support both shapes.
+type DetailApiResponse = Partial<NewsArticle> & {
   data?: NewsArticle;
-}
+};
 
 async function getArticleTitle(slug: string): Promise<{
   title: string;
@@ -25,7 +27,7 @@ async function getArticleTitle(slug: string): Promise<{
       `news-articles-v2/${slug}`,
       { revalidate: 600 }
     );
-    const a = root?.data;
+    const a = root?.data ?? root;
     return {
       title: a?.title || "Bayanihan News",
       category: a?.category,

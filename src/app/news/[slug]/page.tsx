@@ -5,16 +5,20 @@ import NewsDetailContent from "@/components/news/NewsDetailContent";
 import { normalizeArticle } from "@/lib/newsHelpers";
 import type { NewsArticle } from "@/types";
 
-interface DetailApiResponse {
+// The single-article endpoint returns the article fields at the TOP LEVEL
+// (e.g. { id, slug, title, ... }), NOT wrapped in { data } like the list
+// endpoint. Allow both shapes (plus the error variant) so a future change on
+// either side doesn't reintroduce a spurious 404.
+type DetailApiResponse = Partial<NewsArticle> & {
   data?: NewsArticle;
   error?: string;
   message?: string;
-}
+};
 
+// The list endpoint returns Laravel pagination: { data: NewsArticle[], meta }.
+// Some shapes nest as { data: { data: [...] } } — handle both defensively.
 interface ListApiResponse {
-  data?: {
-    data?: NewsArticle[];
-  };
+  data?: NewsArticle[] | { data?: NewsArticle[] };
 }
 
 interface PageProps {
@@ -31,7 +35,15 @@ async function getArticle(slug: string): Promise<NewsArticle | null> {
       // the critical article fetch extra retries (6 attempts ≈ 1.6% failure).
       { noStore: true, retries: 5 }
     );
-    const raw = root?.data ?? null;
+    // The detail endpoint returns the article at the top level, so fall back
+    // to the body itself when there's no `{ data }` wrapper. Reading only
+    // `root.data` (as before) was always undefined here → null → notFound()
+    // → a 404 on every successful fetch.
+    const raw =
+      root?.data ??
+      (root && (root.id || root.slug || root.title)
+        ? (root as NewsArticle)
+        : null);
     return normalizeArticle(raw);
   } catch {
     return null;
@@ -43,7 +55,13 @@ async function getRelatedAndAll(slug: string) {
     const root = await serverGet<ListApiResponse>("news-articles-v2?page=1", {
       revalidate: 300,
     });
-    const raw = Array.isArray(root?.data?.data) ? root.data!.data! : [];
+    // List endpoint is { data: [...] }; tolerate a nested { data: { data } } too.
+    const d = root?.data;
+    const raw: NewsArticle[] = Array.isArray(d)
+      ? d
+      : Array.isArray(d?.data)
+      ? d!.data!
+      : [];
     const normalized = raw
       .map((a) => normalizeArticle(a))
       .filter((a): a is NewsArticle => !!a);
