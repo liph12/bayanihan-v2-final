@@ -27,7 +27,9 @@ async function getArticle(slug: string): Promise<NewsArticle | null> {
     // so we bypass the Next cache to ensure each visit counts.
     const root = await serverGet<DetailApiResponse>(
       `news-articles-v2/${slug}`,
-      { noStore: true }
+      // The origin resets ~half of its connections on this endpoint, so give
+      // the critical article fetch extra retries (6 attempts ≈ 1.6% failure).
+      { noStore: true, retries: 5 }
     );
     const raw = root?.data ?? null;
     return normalizeArticle(raw);
