@@ -27,7 +27,7 @@ import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import merchAds from "@/assets/ads/merch_ads.gif";
 import merchAds2 from "@/assets/ads/merch_ads2.gif";
 import { parseSummary, parseTags, slugifyTitle } from "@/lib/newsHelpers";
-import { useHideOnScroll } from "@/lib/useHideOnScroll";
+import { useHeaderHidden } from "@/providers/HeaderVisibilityProvider";
 import type { NewsArticle } from "@/types";
 
 function formatDate(dateStr?: string | null): string {
@@ -90,10 +90,10 @@ export default function NewsDetailContent({
   const router = useRouter();
   const [progress, setProgress] = useState(0);
 
-  // The header slides away on scroll-down (same logic, in Appbar). When it's
-  // hidden, pin the breadcrumb to the very top; otherwise sit just below the
-  // ~70px header.
-  const headerHidden = useHideOnScroll(true);
+  // Shared with the header (see HeaderVisibilityProvider): when the header
+  // slides away, the breadcrumb pins to the very top and the sidebar rises
+  // with it; otherwise both sit below the ~70px header.
+  const headerHidden = useHeaderHidden();
 
   const paragraphs = useMemo(
     () => parseSummary(article.summary),
@@ -645,7 +645,15 @@ export default function NewsDetailContent({
 
           {/* ============== Sticky Sidebar ============== */}
           <Grid size={{ xs: 12, md: 4 }}>
-            <Box sx={{ position: "sticky", top: 130 }}>
+            <Box
+              sx={{
+                position: "sticky",
+                // Rises to sit just under the breadcrumb when the header hides,
+                // drops back below header + breadcrumb when it's shown.
+                top: headerHidden ? 64 : 130,
+                transition: "top 0.3s ease",
+              }}
+            >
               {related.length > 0 && (
                 <>
                   <Typography

@@ -33,7 +33,7 @@ import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import type { SvgIconComponent } from "@mui/icons-material";
 import { useAuthProvider } from "@/providers/AuthProvider";
-import { useHideOnScroll } from "@/lib/useHideOnScroll";
+import { useHeaderHidden } from "@/providers/HeaderVisibilityProvider";
 
 interface NavItem {
   label: string;
@@ -100,12 +100,10 @@ export default function Appbar() {
   const u = userData as UserShape | null;
   const isEventSubdomain = false;
 
-  // On news article detail pages (/news/<slug>) the header slides away on
-  // scroll-down so the breadcrumb can pin to the very top (see
-  // NewsDetailContent). The /news index and every other page keep the
-  // always-visible sticky header.
-  const enableHideOnScroll = !!pathname && pathname.startsWith("/news/");
-  const hidden = useHideOnScroll(enableHideOnScroll);
+  // Shared hide-on-scroll state (see HeaderVisibilityProvider). It's only ever
+  // true on news article detail pages; everywhere else it stays false, so the
+  // header keeps its always-visible sticky behavior.
+  const hidden = useHeaderHidden();
 
   const handleLogout = () => {
     setAccountAnchor(null);
