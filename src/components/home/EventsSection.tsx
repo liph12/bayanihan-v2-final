@@ -333,8 +333,6 @@ export default function EventsSection({
         position: "relative",
         px: { xs: 2, md: 4, lg: 5 },
         py: { xs: 2.5, md: 3 },
-        background:
-          "radial-gradient(900px 500px at -10% 0%, rgba(247,127,0,0.06), transparent 60%), #fffdf6",
       }}
     >
       {/* Header */}

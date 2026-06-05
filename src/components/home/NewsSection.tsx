@@ -277,8 +277,6 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
         position: "relative",
         px: { xs: 2, md: 4, lg: 5 },
         py: { xs: 2.5, md: 3 },
-        background:
-          "radial-gradient(900px 500px at 110% 0%, rgba(251,191,36,0.08), transparent 60%), #fff",
       }}
     >
       <Box

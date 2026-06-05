@@ -171,12 +171,16 @@ export default async function HomePage() {
         Discover Bayanihan: the global home for Filipino community
         gatherings, cultural celebrations, and Filipino food in every country.
       </h1>
-      <Banner initialCountries={countries} />
-      <EventsSection initialEvents={events} />
-      <RestaurantsSection initialRestaurants={restaurants} />
-      <NewsSection initialArticles={news} />
-      <TopDestinations />
-      <AboutSection />
+      {/* One unified page background — the individual sections are
+          transparent so the whole homepage reads as a single surface. */}
+      <div style={{ background: "#ffffff", flexGrow: 1 }}>
+        <Banner initialCountries={countries} />
+        <EventsSection initialEvents={events} />
+        <RestaurantsSection initialRestaurants={restaurants} />
+        <NewsSection initialArticles={news} />
+        <TopDestinations />
+        <AboutSection />
+      </div>
     </>
   );
 }
