@@ -43,6 +43,7 @@ interface RestaurantsResponse {
 
 interface NewsResponse {
   data?: NewsArticle[];
+  meta?: { last_page?: number };
 }
 
 async function fetchEvents(): Promise<BayanihanEvent[]> {
@@ -77,10 +78,39 @@ async function fetchRestaurants(): Promise<Restaurant[]> {
 
 async function fetchNews(): Promise<NewsArticle[]> {
   try {
-    const root = await serverGet<NewsResponse>("news-articles-v2?page=1", {
+    // Page 1 tells us how many pages exist; fetch the rest in parallel so
+    // EVERY published article ends up in the sitemap (not just the latest
+    // page). New articles land on page 1, so they're picked up automatically
+    // on the next sitemap regeneration (the fetches revalidate every 10 min).
+    const first = await serverGet<NewsResponse>("news-articles-v2?page=1", {
       revalidate: 600,
     });
-    return Array.isArray(root?.data) ? root.data : [];
+    const all: NewsArticle[] = Array.isArray(first?.data) ? [...first.data] : [];
+    const lastPage =
+      typeof first?.meta?.last_page === "number" ? first.meta.last_page : 1;
+    if (lastPage > 1) {
+      const rest = await Promise.all(
+        Array.from({ length: lastPage - 1 }, (_, i) =>
+          serverGet<NewsResponse>(`news-articles-v2?page=${i + 2}`, {
+            revalidate: 600,
+          })
+            .then((r) => (Array.isArray(r?.data) ? r.data : []))
+            .catch(() => [] as NewsArticle[])
+        )
+      );
+      rest.forEach((arr) => all.push(...arr));
+    }
+    // De-dupe by slug (the API repeats the same article across pages) so the
+    // sitemap doesn't list duplicate <url> entries.
+    const seen = new Set<string>();
+    const unique: NewsArticle[] = [];
+    for (const a of all) {
+      const key = a.slug || String(a.id ?? "");
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      unique.push(a);
+    }
+    return unique;
   } catch {
     return [];
   }
