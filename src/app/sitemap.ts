@@ -76,39 +76,59 @@ async function fetchRestaurants(): Promise<Restaurant[]> {
   }
 }
 
+// The news API is hard-capped at 10 items/page (per_page is ignored) AND the
+// origin intermittently resets connections, so pulling every article means
+// many flaky requests. serverGet already retries; we bump it high here and
+// re-fetch any page that comes back empty, because every page up to last_page
+// has rows — an empty result means a dropped connection, not a real gap.
+const NEWS_PAGE_RETRIES = 6;
+
+async function fetchNewsPage(page: number): Promise<NewsArticle[]> {
+  try {
+    const r = await serverGet<NewsResponse>(`news-articles-v2?page=${page}`, {
+      revalidate: 600,
+      retries: NEWS_PAGE_RETRIES,
+    });
+    return Array.isArray(r?.data) ? r.data : [];
+  } catch {
+    return [];
+  }
+}
+
 async function fetchNews(): Promise<NewsArticle[]> {
   try {
-    // Page 1 tells us how many pages exist; fetch the rest in parallel so
-    // EVERY published article ends up in the sitemap (not just the latest
-    // page). New articles land on page 1, so they're picked up automatically
-    // on the next sitemap regeneration (the fetches revalidate every 10 min).
     const first = await serverGet<NewsResponse>("news-articles-v2?page=1", {
       revalidate: 600,
+      retries: NEWS_PAGE_RETRIES,
     });
-    const all: NewsArticle[] = Array.isArray(first?.data) ? [...first.data] : [];
     const lastPage =
       typeof first?.meta?.last_page === "number" ? first.meta.last_page : 1;
+    const byPage: NewsArticle[][] = [
+      Array.isArray(first?.data) ? first.data : [],
+    ];
+
     if (lastPage > 1) {
-      const rest = await Promise.all(
-        Array.from({ length: lastPage - 1 }, (_, i) =>
-          serverGet<NewsResponse>(`news-articles-v2?page=${i + 2}`, {
-            revalidate: 600,
-          })
-            .then((r) => (Array.isArray(r?.data) ? r.data : []))
-            .catch(() => [] as NewsArticle[])
-        )
-      );
-      rest.forEach((arr) => all.push(...arr));
+      const pages = Array.from({ length: lastPage - 1 }, (_, i) => i + 2);
+      const rest = await Promise.all(pages.map((p) => fetchNewsPage(p)));
+      // Second pass: any page that returned empty almost certainly failed
+      // (the origin reset the connection), so retry it once more.
+      for (let i = 0; i < pages.length; i++) {
+        if (rest[i].length === 0) rest[i] = await fetchNewsPage(pages[i]);
+      }
+      byPage.push(...rest);
     }
-    // De-dupe by slug (the API repeats the same article across pages) so the
+
+    // Flatten + de-dupe by slug (the API repeats articles across pages) so the
     // sitemap doesn't list duplicate <url> entries.
     const seen = new Set<string>();
     const unique: NewsArticle[] = [];
-    for (const a of all) {
-      const key = a.slug || String(a.id ?? "");
-      if (!key || seen.has(key)) continue;
-      seen.add(key);
-      unique.push(a);
+    for (const arr of byPage) {
+      for (const a of arr) {
+        const key = a.slug || String(a.id ?? "");
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        unique.push(a);
+      }
     }
     return unique;
   } catch {
