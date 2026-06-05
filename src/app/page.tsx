@@ -3,10 +3,12 @@ import { serverGet } from "@/lib/serverFetch";
 import Banner from "@/components/home/Banner";
 import EventsSection from "@/components/home/EventsSection";
 import RestaurantsSection from "@/components/home/RestaurantsSection";
+import NewsSection from "@/components/home/NewsSection";
 import TopDestinations from "@/components/home/TopDestinations";
 import AboutSection from "@/components/home/AboutSection";
 import { POPULAR_ORDER } from "@/lib/popularCountries";
-import type { BayanihanEvent, Country, Restaurant } from "@/types";
+import { normalizeArticle } from "@/lib/newsHelpers";
+import type { BayanihanEvent, Country, NewsArticle, Restaurant } from "@/types";
 
 // The home page inherits its title/description from the root layout. We
 // override here only to pin a canonical URL and a page-specific OG URL —
@@ -68,6 +70,33 @@ async function getRestaurants(): Promise<Restaurant[]> {
   }
 }
 
+interface NewsListResponse {
+  data?: NewsArticle[];
+}
+
+async function getNews(): Promise<NewsArticle[]> {
+  try {
+    const root = await serverGet<NewsListResponse>("news-articles-v2?page=1", {
+      revalidate: 300,
+    });
+    const raw = Array.isArray(root?.data) ? root.data : [];
+    // De-duplicate (the API repeats articles across pages) + normalize.
+    const seen = new Set<string>();
+    const out: NewsArticle[] = [];
+    for (const a of raw) {
+      const n = normalizeArticle(a);
+      if (!n) continue;
+      const key = String(n.id ?? n.slug ?? n.title ?? "");
+      if (key && seen.has(key)) continue;
+      if (key) seen.add(key);
+      out.push(n);
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 async function getCountries(): Promise<Country[]> {
   try {
     const data = await serverGet<CountriesResponse>("countries", {
@@ -91,10 +120,11 @@ async function getCountries(): Promise<Country[]> {
 }
 
 export default async function HomePage() {
-  const [events, restaurants, countries] = await Promise.all([
+  const [events, restaurants, countries, news] = await Promise.all([
     getEvents(),
     getRestaurants(),
     getCountries(),
+    getNews(),
   ]);
 
   return (
@@ -127,6 +157,7 @@ export default async function HomePage() {
       <Banner initialCountries={countries} />
       <EventsSection initialEvents={events} />
       <RestaurantsSection initialRestaurants={restaurants} />
+      <NewsSection initialArticles={news} />
       <TopDestinations />
       <AboutSection />
     </>
