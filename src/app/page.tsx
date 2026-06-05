@@ -72,14 +72,31 @@ async function getRestaurants(): Promise<Restaurant[]> {
 
 interface NewsListResponse {
   data?: NewsArticle[];
+  meta?: { last_page?: number };
 }
 
 async function getNews(): Promise<NewsArticle[]> {
   try {
-    const root = await serverGet<NewsListResponse>("news-articles-v2?page=1", {
+    // Page 1 tells us how many pages there are; fetch the rest in parallel so
+    // the homepage shows every article.
+    const first = await serverGet<NewsListResponse>("news-articles-v2?page=1", {
       revalidate: 300,
     });
-    const raw = Array.isArray(root?.data) ? root.data : [];
+    const raw: NewsArticle[] = Array.isArray(first?.data) ? [...first.data] : [];
+    const lastPage =
+      typeof first?.meta?.last_page === "number" ? first.meta.last_page : 1;
+    if (lastPage > 1) {
+      const rest = await Promise.all(
+        Array.from({ length: lastPage - 1 }, (_, i) =>
+          serverGet<NewsListResponse>(`news-articles-v2?page=${i + 2}`, {
+            revalidate: 300,
+          })
+            .then((r) => (Array.isArray(r?.data) ? r.data : []))
+            .catch(() => [] as NewsArticle[])
+        )
+      );
+      rest.forEach((arr) => raw.push(...arr));
+    }
     // De-duplicate (the API repeats articles across pages) + normalize.
     const seen = new Set<string>();
     const out: NewsArticle[] = [];

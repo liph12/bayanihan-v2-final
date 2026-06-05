@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import NextLink from "next/link";
 import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
@@ -17,6 +17,7 @@ const ACCENT_GRADIENT =
 
 interface NewsListResponse {
   data?: NewsArticle[];
+  meta?: { last_page?: number };
 }
 
 // The API can return the same article (same id/slug) on more than one page,
@@ -58,11 +59,29 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
     let mounted = true;
     (async () => {
       try {
-        const resp = await AxiosInstance.get<NewsListResponse>(
+        const first = await AxiosInstance.get<NewsListResponse>(
           "news-articles-v2?page=1"
         );
-        const arr = Array.isArray(resp?.data?.data) ? resp.data!.data! : [];
-        if (mounted) setArticles(dedupeNormalize(arr));
+        const all: NewsArticle[] = Array.isArray(first?.data?.data)
+          ? [...first.data!.data!]
+          : [];
+        const lastPage =
+          typeof first?.data?.meta?.last_page === "number"
+            ? first.data.meta.last_page
+            : 1;
+        if (lastPage > 1) {
+          const rest = await Promise.all(
+            Array.from({ length: lastPage - 1 }, (_, i) =>
+              AxiosInstance.get<NewsListResponse>(
+                `news-articles-v2?page=${i + 2}`
+              )
+                .then((r) => (Array.isArray(r?.data?.data) ? r.data!.data! : []))
+                .catch(() => [] as NewsArticle[])
+            )
+          );
+          rest.forEach((arr) => all.push(...arr));
+        }
+        if (mounted) setArticles(dedupeNormalize(all));
       } catch {
         if (mounted) setArticles([]);
       }
@@ -71,8 +90,6 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
       mounted = false;
     };
   }, [initialArticles.length]);
-
-  const visible = useMemo(() => articles.slice(0, 12), [articles]);
 
   const renderCard = (a: NewsArticle) => {
     const slug = a.slug || slugifyTitle(a.title || "");
@@ -113,6 +130,7 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
             // eslint-disable-next-line @next/next/no-img-element
             <img
               className="news-img"
+              loading="lazy"
               src={image}
               alt={a.title || "News"}
               style={{
@@ -365,7 +383,7 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
         </Box>
       </Box>
 
-      {visible.length === 0 ? (
+      {articles.length === 0 ? (
         <Box
           sx={{
             py: 4,
@@ -387,8 +405,8 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
           </Typography>
         </Box>
       ) : (
-        <StoryRail accentColor="#b45309" deps={[visible.length]} autoScroll>
-          {visible.map((a, i) => (
+        <StoryRail accentColor="#b45309" deps={[articles.length]} autoScroll>
+          {articles.map((a, i) => (
             <Box key={a.id || a.slug || i}>{renderCard(a)}</Box>
           ))}
         </StoryRail>
