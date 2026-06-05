@@ -648,6 +648,18 @@ export default function NewsContent({ initial }: NewsContentProps) {
     <Box sx={{ pb: 8, bgcolor: "#fff" }}>
       {/* =================== HERO =================== */}
       <Container sx={{ pt: 4 }}>
+        <Typography
+          component="h1"
+          sx={{
+            fontWeight: 800,
+            fontSize: { xs: 24, md: 32 },
+            fontStyle: "italic",
+            color: "#0f172a",
+            mb: { xs: 2, md: 2.5 },
+          }}
+        >
+          Global Pinoy Updates
+        </Typography>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, md: 6 }}>
             <BigHeroCard article={heroBig} />
