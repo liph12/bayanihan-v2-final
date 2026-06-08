@@ -354,13 +354,23 @@ export default function Footer() {
               href={HOSTNAME + ARTICLES_BASE_PATH}
               underline="none"
               sx={{
-                fontSize: 14,
-                fontWeight: 700,
-                // Darker orange for sufficient contrast on the light footer.
-                color: "#c2410c",
                 display: "inline-flex",
                 alignItems: "center",
-                "&:hover": { color: "#9a3412" },
+                gap: 0.5,
+                fontSize: "0.875rem",
+                fontWeight: 700,
+                // Solid pill button — white on dark orange (~7:1 contrast).
+                color: "#fff",
+                bgcolor: "#c2410c",
+                px: 1.75,
+                py: 0.75,
+                borderRadius: 999,
+                transition: "background-color .2s ease, transform .2s ease",
+                "&:hover": {
+                  bgcolor: "#9a3412",
+                  color: "#fff",
+                  transform: "translateY(-1px)",
+                },
               }}
             >
               View all articles
