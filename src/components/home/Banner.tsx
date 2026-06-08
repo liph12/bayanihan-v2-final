@@ -146,6 +146,7 @@ export default function Banner({ initialCountries = [] }: BannerProps) {
           alt="Filipinos celebrating together at a community festival"
           fill
           priority
+          fetchPriority="high"
           quality={55}
           sizes="100vw"
           style={{ objectFit: "cover", objectPosition: "center" }}
