@@ -6,6 +6,7 @@ import Banner from "@/components/home/Banner";
 import EventsSection from "@/components/home/EventsSection";
 import RestaurantsSection from "@/components/home/RestaurantsSection";
 import NewsSection from "@/components/home/NewsSection";
+import HomeContent from "@/components/home/HomeContent";
 import { normalizeArticle } from "@/lib/newsHelpers";
 import type { BayanihanEvent, NewsArticle, Restaurant } from "@/types";
 
@@ -179,6 +180,7 @@ export default function HomePage() {
         </Suspense>
         <TopDestinations />
         <AboutSection />
+        <HomeContent />
       </div>
     </>
   );
