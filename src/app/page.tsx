@@ -170,9 +170,7 @@ export default function HomePage() {
           border: 0,
         }}
       >
-        Bayanihan.com — Filipino events, festivals, and restaurants worldwide.
-        Discover Bayanihan: the global home for Filipino community
-        gatherings, cultural celebrations, and Filipino food in every country.
+        Bayanihan.com — Filipino Events, Festivals &amp; Restaurants Worldwide
       </h1>
       {/* One unified page background — the individual sections are
           transparent so the whole homepage reads as a single surface. */}
