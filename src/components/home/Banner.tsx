@@ -143,7 +143,7 @@ export default function Banner({ initialCountries = [] }: BannerProps) {
       <Box sx={sx.wrap}>
         <Image
           src={HERO_IMAGE}
-          alt=""
+          alt="Filipinos celebrating together at a community festival"
           fill
           priority
           quality={55}
@@ -247,7 +247,11 @@ export default function Banner({ initialCountries = [] }: BannerProps) {
                                     loading="lazy"
                                     width={35}
                                     src={`https://flagcdn.com/w40/${result.country_code}.png`}
-                                    alt="Country Flag"
+                                    alt={
+                                      result.title
+                                        ? `${result.title} country flag`
+                                        : "Country flag"
+                                    }
                                   />
                                 </Grid>
                                 <Grid size="grow">

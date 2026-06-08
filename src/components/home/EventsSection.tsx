@@ -302,7 +302,7 @@ export default function EventsSection({
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={flagUrl(c)}
-                      alt=""
+                      alt={`${name} flag`}
                       width={28}
                       height={20}
                       style={{ borderRadius: 3, objectFit: "cover", display: "block" }}
@@ -348,7 +348,7 @@ export default function EventsSection({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={flagUrl(c.code)}
-                    alt=""
+                    alt={`${c.name} flag`}
                     width={22}
                     height={16}
                     style={{ borderRadius: 2, objectFit: "cover", display: "block" }}

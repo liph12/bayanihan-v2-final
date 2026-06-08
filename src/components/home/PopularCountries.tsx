@@ -84,7 +84,12 @@ export default function PopularCountries({
           return (
             <Box component={NextLink} key={c.code} href={href} sx={sx.chip}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={flagSrc} srcSet={flag2x} alt="" style={sx.flag} />
+              <img
+                src={flagSrc}
+                srcSet={flag2x}
+                alt={`${c.name} flag`}
+                style={sx.flag}
+              />
               <span>{c.name}</span>
             </Box>
           );
