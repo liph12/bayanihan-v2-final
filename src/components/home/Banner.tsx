@@ -1,11 +1,5 @@
 "use client";
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import {
   Box,
   Paper,
@@ -24,15 +18,10 @@ import AxiosInstance from "@/lib/AxiosInstance";
 import PopularCountries from "./PopularCountries";
 import type { Country } from "@/types";
 
-const slidesDefault = [
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner.webp",
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner2.webp",
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner3.webp",
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner4.webp",
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner5.webp",
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner6.webp",
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner7.webp",
-];
+// Single static hero — far lighter than the old 7-image slider (no rotation
+// JS, one optimized image, faster LCP).
+const HERO_IMAGE =
+  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner2.webp";
 
 interface SearchResult {
   title?: string;
@@ -59,24 +48,12 @@ const sx = {
     overflow: "hidden",
     my: 1.5,
   },
-  slideBase: {
+  // Dark overlay over the hero so the white search/headline text stays legible.
+  overlay: {
     position: "absolute",
     inset: 0,
-    backgroundSize: "cover",
-    backgroundPosition: { xs: "center", lg: "center -100px" },
-    opacity: 0,
-    transform: "scale(1.08)",
-    transition: "opacity 1000ms ease-in-out, transform 5000ms ease-in-out",
-    willChange: "opacity, transform",
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      inset: 0,
-      background: "rgba(0,0,0,0.65)",
-      zIndex: 1,
-    },
+    background: "rgba(0,0,0,0.55)",
   },
-  slideActive: { opacity: 1, transform: "scale(1)" },
   foreground: {
     position: "absolute",
     inset: 0,
@@ -120,76 +97,21 @@ const sx = {
     overflow: "hidden",
   },
   resultsBoxScrollable: { maxHeight: 260, overflowY: "auto" },
-  dots: {
-    display: "flex",
-    gap: 1,
-    justifyContent: "center",
-    mt: 1,
-    position: "absolute",
-    bottom: 10,
-    left: 0,
-    right: 0,
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 999,
-    border: "none",
-    background: "#ffffffb3",
-    cursor: "pointer",
-  },
-  dotActive: { background: "#fff", width: 22, transition: "width .2s" },
   resultCard: { border: "none", boxShadow: "none", textAlign: "left" },
   resultCardContent: { p: "10px !important" },
 } as const;
 
 interface BannerProps {
-  slides?: string[];
   initialCountries?: Country[];
 }
 
-export default function Banner({
-  slides = slidesDefault,
-  initialCountries = [],
-}: BannerProps) {
-  const [active, setActive] = useState(0);
-  // Only the active slide (and the next, ready for the cross-fade) load their
-  // background image — loading all 7 hero images at once was wrecking LCP
-  // under throttled connections.
-  const [loaded, setLoaded] = useState<Set<number>>(() => new Set([0]));
+export default function Banner({ initialCountries = [] }: BannerProps) {
   const [searchResults, setSearchResults] = useState<SearchResult[] | null>(
     null
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [searching, setSearching] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const images = useMemo(
-    () => (slides?.length ? slides : slidesDefault),
-    [slides]
-  );
-
-  useEffect(() => {
-    const id = setInterval(
-      () => setActive((i) => (i + 1) % images.length),
-      5000
-    );
-    return () => clearInterval(id);
-  }, [images.length]);
-
-  // Lazily mark the current + next slide as loaded so their images are
-  // fetched just-in-time rather than all upfront.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setLoaded((prev) => {
-      const next = (active + 1) % images.length;
-      if (prev.has(active) && prev.has(next)) return prev;
-      const s = new Set(prev);
-      s.add(active);
-      s.add(next);
-      return s;
-    });
-  }, [active, images.length]);
 
   const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -219,39 +141,16 @@ export default function Banner({
   return (
     <Box component="section" sx={sx.container}>
       <Box sx={sx.wrap}>
-        {images.map((src, idx) => (
-          <Box
-            key={idx}
-            sx={{
-              ...sx.slideBase,
-              ...(idx === active ? sx.slideActive : {}),
-            }}
-            aria-hidden={idx !== active}
-          >
-            {loaded.has(idx) && (
-              <Image
-                src={src}
-                alt=""
-                fill
-                priority={idx === 0}
-                quality={55}
-                sizes="100vw"
-                style={{ objectFit: "cover", objectPosition: "center" }}
-              />
-            )}
-          </Box>
-        ))}
-        <Box sx={sx.dots}>
-          {images.map((_, idx) => (
-            <Box
-              key={idx}
-              component="button"
-              aria-label={`Slide ${idx + 1}`}
-              onClick={() => setActive(idx)}
-              sx={{ ...sx.dot, ...(idx === active ? sx.dotActive : {}) }}
-            />
-          ))}
-        </Box>
+        <Image
+          src={HERO_IMAGE}
+          alt=""
+          fill
+          priority
+          quality={55}
+          sizes="100vw"
+          style={{ objectFit: "cover", objectPosition: "center" }}
+        />
+        <Box sx={sx.overlay} />
       </Box>
       <Box sx={sx.foreground}>
         <Box sx={sx.content}>
