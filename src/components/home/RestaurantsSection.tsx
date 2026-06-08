@@ -1,70 +1,186 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Skeleton } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import NextLink from "next/link";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import RestaurantRoundedIcon from "@mui/icons-material/RestaurantRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import AxiosInstance from "@/lib/AxiosInstance";
-import { useLocale } from "@/providers/LocaleProvider";
-import type { Restaurant } from "@/types";
 import { restaurantUrl } from "@/lib/eventUrl";
-import StoryRail from "./StoryRail";
+import type { Restaurant } from "@/types";
 
 const FONT_HEAD = "var(--font-urbanist), 'Outfit', sans-serif";
 const FONT_BODY = "var(--font-outfit), 'Outfit', sans-serif";
 const ACCENT_GRADIENT =
   "linear-gradient(135deg, #0f766e 0%, #14b8a6 50%, #06b6d4 100%)";
 
-const COUNTRY_CODE: Record<string, string> = {
-  philippines: "ph",
-  "united states": "us",
-  "united states of america": "us",
-  usa: "us",
-  canada: "ca",
-  australia: "au",
-  "united kingdom": "gb",
-  uk: "gb",
-  "united arab emirates": "ae",
-  uae: "ae",
-  singapore: "sg",
-  "saudi arabia": "sa",
-  qatar: "qa",
-  kuwait: "kw",
-  bahrain: "bh",
-  oman: "om",
-  italy: "it",
-  spain: "es",
-  germany: "de",
-  france: "fr",
-  netherlands: "nl",
-  norway: "no",
-  sweden: "se",
-  japan: "jp",
-  korea: "kr",
-  "south korea": "kr",
-  "hong kong": "hk",
-  malaysia: "my",
-  taiwan: "tw",
-  "new zealand": "nz",
-};
+const MAX_CARDS = 10;
 
-function countryToCode(name?: string): string | null {
-  if (!name) return null;
-  const key = name.trim().toLowerCase();
-  return COUNTRY_CODE[key] || (key.length === 2 ? key : null);
-}
+// 20-column base so cards divide evenly into 5 per row on large screens
+// (12-col MUI default only gives 4). Responsive: 1 / 2 / 4 / 5 per row.
+const GRID_COLUMNS = 20;
+const CARD_SIZE = { xs: 20, sm: 10, md: 5, lg: 4 };
 
 interface RestaurantsSectionProps {
   initialRestaurants?: Restaurant[];
 }
 
+function extractRestaurants(payload: unknown): Restaurant[] {
+  const d = payload as
+    | { data?: { restaurant?: Restaurant[] }; restaurant?: Restaurant[] }
+    | Restaurant[]
+    | undefined;
+  if (Array.isArray(d)) return d;
+  if (Array.isArray(d?.data?.restaurant)) return d!.data!.restaurant!;
+  if (Array.isArray(d?.restaurant)) return d!.restaurant!;
+  return [];
+}
+
+function RestaurantCard({ r }: { r: Restaurant }) {
+  const href = restaurantUrl(r) || "#";
+  const isExternal = href.startsWith("http");
+  const image = r.photo || r.cover || r.image || r.logo || "";
+  const location = [r.city, r.country].filter(Boolean).join(", ") || r.address || "";
+
+  const card = (
+    <Box
+      sx={{
+        position: "relative",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 3,
+        overflow: "hidden",
+        bgcolor: "#fff",
+        border: "1px solid #d7f0ec",
+        boxShadow: "0 6px 16px rgba(15,23,42,0.06)",
+        transition: "all .3s cubic-bezier(0.22, 1, 0.36, 1)",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 18px 36px rgba(15,23,42,0.12)",
+          "& .rs-img": { transform: "scale(1.05)" },
+        },
+      }}
+    >
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          aspectRatio: "16 / 10",
+          overflow: "hidden",
+          bgcolor: "#0f172a",
+        }}
+      >
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className="rs-img"
+            src={image}
+            alt={r.name || "Restaurant"}
+            loading="lazy"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              transition: "transform .5s cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          />
+        ) : (
+          <Box sx={{ position: "absolute", inset: 0, background: ACCENT_GRADIENT }} />
+        )}
+      </Box>
+
+      <Box sx={{ p: { xs: 2, md: 2.25 }, display: "flex", flexDirection: "column", gap: 1, flex: 1 }}>
+        <Typography
+          sx={{
+            fontFamily: FONT_HEAD,
+            fontWeight: 800,
+            fontSize: { xs: 15, md: 16 },
+            lineHeight: 1.3,
+            color: "#0f172a",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {r.name || "Filipino restaurant"}
+        </Typography>
+
+        {r.category && (
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.5,
+              color: "#0f766e",
+              fontFamily: FONT_BODY,
+              fontSize: 12.5,
+              fontWeight: 700,
+            }}
+          >
+            <RestaurantRoundedIcon sx={{ fontSize: 14 }} />
+            {r.category}
+          </Box>
+        )}
+
+        {location && (
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.5,
+              color: "#64748b",
+              fontFamily: FONT_BODY,
+              fontSize: 12,
+              fontWeight: 600,
+              mt: "auto",
+            }}
+          >
+            <LocationOnRoundedIcon sx={{ fontSize: 13 }} />
+            <Box
+              component="span"
+              sx={{
+                display: "-webkit-box",
+                WebkitLineClamp: 1,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {location}
+            </Box>
+          </Box>
+        )}
+      </Box>
+    </Box>
+  );
+
+  const linkStyle = {
+    textDecoration: "none",
+    color: "inherit",
+    display: "block",
+    height: "100%",
+  } as const;
+
+  return isExternal ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+      {card}
+    </a>
+  ) : (
+    <NextLink href={href} style={linkStyle}>
+      {card}
+    </NextLink>
+  );
+}
+
 export default function RestaurantsSection({
   initialRestaurants = [],
 }: RestaurantsSectionProps) {
-  const [restaurants, setRestaurants] =
-    useState<Restaurant[]>(initialRestaurants);
-  const { t } = useLocale();
+  const [restaurants, setRestaurants] = useState<Restaurant[]>(initialRestaurants);
+  const [loading, setLoading] = useState(initialRestaurants.length === 0);
 
   useEffect(() => {
     if (initialRestaurants.length > 0) return;
@@ -72,23 +188,11 @@ export default function RestaurantsSection({
     (async () => {
       try {
         const resp = await AxiosInstance.get<unknown>("restaurants");
-        const d = resp?.data as
-          | {
-              data?: { restaurant?: Restaurant[] };
-              restaurant?: Restaurant[];
-            }
-          | Restaurant[]
-          | undefined;
-        const arr: Restaurant[] = Array.isArray(d)
-          ? d
-          : Array.isArray(d?.data?.restaurant)
-          ? d.data!.restaurant!
-          : Array.isArray(d?.restaurant)
-          ? d.restaurant!
-          : [];
-        if (mounted) setRestaurants(arr);
+        if (mounted) setRestaurants(extractRestaurants(resp?.data));
       } catch {
         if (mounted) setRestaurants([]);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => {
@@ -96,439 +200,133 @@ export default function RestaurantsSection({
     };
   }, [initialRestaurants.length]);
 
-  const visible = useMemo(() => restaurants.slice(0, 30), [restaurants]);
-
-  const renderCard = (r: Restaurant) => {
-    const link = restaurantUrl(r);
-    const image = r?.photo || r?.cover || r?.image;
-    const isExternal = link.startsWith("http");
-    const code = countryToCode(r?.country);
-    const locationLong = [r?.city, r?.country].filter(Boolean).join(", ");
-    const cuisine = r?.category;
-
-    const card = (
-      <Box
-        sx={{
-          position: "relative",
-          // Same approach as EventsSection: explicit width + height (no
-          // aspectRatio) so we can animate width on hover without dragging
-          // the rail row's height with it. Heights = width * 16/9 to
-          // preserve the original 9:16 portrait look at rest.
-          width: { xs: 140, sm: 160, md: 180 },
-          height: { xs: 249, sm: 284, md: 320 },
-          flexShrink: 0,
-          scrollSnapAlign: "start",
-          borderRadius: 2.5,
-          overflow: "hidden",
-          bgcolor: "#0f172a",
-          boxShadow: "0 6px 16px rgba(15,23,42,0.12)",
-          cursor: "pointer",
-          transition:
-            "width .35s cubic-bezier(0.22, 1, 0.36, 1), transform .35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow .35s",
-          // Only fire the expand effect on devices that actually support
-          // hovering. Touch devices keep the compact tap-to-open behavior.
-          "@media (hover: hover)": {
-            "&:hover": {
-              width: { xs: 240, sm: 300, md: 340 },
-              transform: "translateY(-4px)",
-              boxShadow: "0 18px 36px rgba(15,23,42,0.22)",
-              "& .rest-img": { transform: "scale(1.08)" },
-              "& .rest-name": { WebkitLineClamp: 3 },
-              "& .rest-extra": {
-                opacity: 1,
-                transform: "translateY(0)",
-                pointerEvents: "auto",
-              },
-            },
-          },
-          // Touch / mobile can't hover, so present the expanded state by
-          // default: a wider card with the details and "View restaurant"
-          // button always visible.
-          "@media (hover: none), (max-width: 600px)": {
-            width: { xs: 240, sm: 300 },
-            "& .rest-name": { WebkitLineClamp: 3 },
-            "& .rest-extra": {
-              opacity: 1,
-              transform: "translateY(0)",
-              pointerEvents: "auto",
-            },
-          },
-        }}
-      >
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            className="rest-img"
-            src={image}
-            alt={r.name || "Restaurant"}
-            style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-              transition: "transform .5s cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
-          />
-        ) : (
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              background: ACCENT_GRADIENT,
-              display: "grid",
-              placeItems: "center",
-              color: "#fff",
-            }}
-          >
-            <RestaurantRoundedIcon sx={{ fontSize: 36, opacity: 0.85 }} />
-          </Box>
-        )}
-
-        <Box
-          aria-hidden
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(180deg, rgba(15,23,42,0.32) 0%, transparent 30%, transparent 50%, rgba(15,23,42,0.9) 100%)",
-          }}
-        />
-
-        {code && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.45,
-              pl: 0.4,
-              pr: 1,
-              py: 0.3,
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.22)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              color: "#fff",
-              fontFamily: FONT_HEAD,
-              fontSize: 11.5,
-              fontWeight: 800,
-              letterSpacing: "0.04em",
-              textTransform: "uppercase",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`https://flagcdn.com/w40/${code}.png`}
-              alt={r.country || ""}
-              width={18}
-              height={13}
-              style={{ borderRadius: 2, display: "block" }}
-            />
-            {code}
-          </Box>
-        )}
-
-        <Box
-          sx={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            p: 1.25,
-            color: "#fff",
-          }}
-        >
-          {r?.city && (
-            <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 0.3,
-                color: "rgba(255,255,255,0.92)",
-                mb: 0.5,
-              }}
-            >
-              <LocationOnRoundedIcon sx={{ fontSize: 12 }} />
-              <Typography
-                sx={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 12,
-                  fontWeight: 700,
-                  letterSpacing: "0.02em",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.6)",
-                }}
-              >
-                {r.city}
-              </Typography>
-            </Box>
-          )}
-          <Typography
-            className="rest-name"
-            sx={{
-              fontFamily: FONT_HEAD,
-              fontSize: { xs: 14, md: 15 },
-              fontWeight: 800,
-              lineHeight: 1.25,
-              letterSpacing: "-0.005em",
-              textTransform: "capitalize",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-              textShadow: "0 2px 6px rgba(0,0,0,0.5)",
-              transition: "all .3s ease",
-            }}
-          >
-            {r?.name || "Restaurant"}
-          </Typography>
-
-          {/*
-            Hover-only "extra" panel — revealed by the parent's
-            @media (hover: hover) &:hover rule. pointerEvents is off
-            while hidden so it never intercepts clicks on the card link.
-          */}
-          <Box
-            className="rest-extra"
-            sx={{
-              mt: 0.75,
-              opacity: 0,
-              transform: "translateY(6px)",
-              pointerEvents: "none",
-              transition:
-                "opacity .25s ease .05s, transform .3s cubic-bezier(0.22, 1, 0.36, 1) .05s",
-            }}
-          >
-            {locationLong && (
-              <Typography
-                sx={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.85)",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 1,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                }}
-              >
-                {locationLong}
-              </Typography>
-            )}
-            {cuisine && (
-              <Typography
-                sx={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: "rgba(255,255,255,0.7)",
-                  mt: 0.25,
-                  textTransform: "capitalize",
-                  display: "-webkit-box",
-                  WebkitLineClamp: 1,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                }}
-              >
-                {cuisine}
-              </Typography>
-            )}
-            <Box
-              sx={{
-                mt: 1,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 0.4,
-                px: 1.1,
-                py: 0.4,
-                borderRadius: 999,
-                background: ACCENT_GRADIENT,
-                color: "#fff",
-                fontFamily: FONT_HEAD,
-                fontSize: 11,
-                fontWeight: 800,
-                letterSpacing: "0.02em",
-                boxShadow: "0 6px 14px rgba(6,182,212,0.35)",
-              }}
-            >
-              View restaurant
-              <ArrowForwardRoundedIcon sx={{ fontSize: 12 }} />
-            </Box>
-          </Box>
-        </Box>
-      </Box>
-    );
-
-    return isExternal ? (
-      <a
-        href={link}
-        draggable={false}
-        style={{ textDecoration: "none", color: "inherit", display: "block" }}
-      >
-        {card}
-      </a>
-    ) : (
-      <NextLink
-        href={link}
-        draggable={false}
-        style={{ textDecoration: "none", color: "inherit", display: "block" }}
-      >
-        {card}
-      </NextLink>
-    );
-  };
+  const list = useMemo(() => restaurants.slice(0, MAX_CARDS), [restaurants]);
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        px: { xs: 2, md: 4, lg: 5 },
-        py: { xs: 2.5, md: 3 },
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 2,
-          mb: 1.5,
-        }}
-      >
-        <Box>
+    <Box sx={{ position: "relative", px: { xs: 2, md: 4, lg: 5 }, py: { xs: 2.5, md: 3 } }}>
+      <Box sx={{ maxWidth: 1650, mx: "auto" }}>
+        {/* ── Header ── */}
+        <Typography
+          component="h2"
+          sx={{
+            fontFamily: FONT_HEAD,
+            fontWeight: 800,
+            fontSize: { xs: 22, md: 30 },
+            color: "#0f172a",
+          }}
+        >
+          Discover Filipino{" "}
+          <Box
+            component="span"
+            sx={{
+              background: ACCENT_GRADIENT,
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}
+          >
+            Restaurants
+          </Box>
+        </Typography>
+        <Typography
+          sx={{
+            fontFamily: FONT_BODY,
+            color: "#64748b",
+            fontSize: { xs: 14, md: 15 },
+            mt: 0.5,
+            mb: 3,
+          }}
+        >
+          Filipino-owned restaurants and eateries around the world.
+        </Typography>
+
+        {/* ── Grid ── */}
+        {loading ? (
+          <Grid container columns={GRID_COLUMNS} spacing={{ xs: 2, md: 3 }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Grid size={CARD_SIZE} key={i}>
+                <Skeleton
+                  variant="rounded"
+                  sx={{ width: "100%", aspectRatio: "16/10", borderRadius: 3 }}
+                />
+                <Skeleton width="80%" sx={{ mt: 1 }} />
+                <Skeleton width="50%" />
+              </Grid>
+            ))}
+          </Grid>
+        ) : list.length === 0 ? (
           <Box
             sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.6,
-              px: 1,
-              py: 0.25,
-              borderRadius: 999,
-              bgcolor: "#ecfeff",
-              border: "1px solid #a5f3fc",
-              color: "#0e7490",
-              fontFamily: FONT_HEAD,
-              fontSize: 9.5,
-              fontWeight: 800,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              mb: 0.75,
+              py: 6,
+              textAlign: "center",
+              borderRadius: 3,
+              bgcolor: "#f0fdfa",
+              border: "1px dashed #99f6e4",
             }}
           >
-            <RestaurantRoundedIcon sx={{ fontSize: 11 }} />
-            Restaurants
-            {restaurants.length > 0 && (
+            <Typography sx={{ fontFamily: FONT_HEAD, fontWeight: 800, color: "#0f172a", mb: 1 }}>
+              No restaurants to show yet
+            </Typography>
+            <Typography sx={{ fontFamily: FONT_BODY, fontSize: 14, color: "#64748b", mb: 3 }}>
+              Check back soon, or explore the full directory.
+            </Typography>
+            <NextLink href="/restaurant" style={{ textDecoration: "none" }}>
               <Box
-                component="span"
                 sx={{
-                  ml: 0.5,
-                  pl: 0.75,
-                  borderLeft: "1px solid #a5f3fc",
-                  color: "#0f172a",
-                  fontWeight: 900,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  px: 2.5,
+                  py: 1.25,
+                  borderRadius: 999,
+                  fontFamily: FONT_HEAD,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: "#fff",
+                  background: ACCENT_GRADIENT,
+                  boxShadow: "0 8px 18px rgba(20,184,166,0.3)",
                 }}
               >
-                {restaurants.length}
+                Browse all restaurants
               </Box>
-            )}
+            </NextLink>
           </Box>
-          <Typography
-            component="h2"
-            sx={{
-              fontFamily: FONT_HEAD,
-              fontWeight: 900,
-              fontSize: { xs: 18, sm: 20, md: 22 },
-              lineHeight: 1.15,
-              letterSpacing: "-0.015em",
-              color: "#0f172a",
-            }}
-          >
-            {t("discoverRestaurantsTitle") || "Discover Filipino restaurants"}
-            <Box
-              component="span"
-              sx={{
-                background: ACCENT_GRADIENT,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              .
+        ) : (
+          <>
+            <Grid container columns={GRID_COLUMNS} spacing={{ xs: 2, md: 3 }}>
+              {list.map((r, i) => (
+                <Grid size={CARD_SIZE} key={r.id || `rs-${i}`}>
+                  <RestaurantCard r={r} />
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ mt: 3.5, display: "flex", justifyContent: "center" }}>
+              <NextLink href="/restaurant" style={{ textDecoration: "none" }}>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    px: 3,
+                    py: 1.25,
+                    borderRadius: 999,
+                    fontFamily: FONT_HEAD,
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: "#0f766e",
+                    border: "2px solid #99f6e4",
+                    transition: "background .2s",
+                    "&:hover": { background: "#f0fdfa" },
+                  }}
+                >
+                  See all restaurants
+                  <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
+                </Box>
+              </NextLink>
             </Box>
-          </Typography>
-        </Box>
-
-        <Box
-          component={NextLink}
-          href="/restaurant"
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.3,
-            px: 1.25,
-            py: 0.55,
-            borderRadius: 999,
-            fontFamily: FONT_HEAD,
-            fontSize: 11.5,
-            fontWeight: 800,
-            color: "#fff",
-            textDecoration: "none",
-            background: ACCENT_GRADIENT,
-            boxShadow: "0 6px 14px rgba(6,182,212,0.28)",
-            transition: "all .2s ease",
-            flexShrink: 0,
-            "&:hover": {
-              transform: "translateY(-1px)",
-              boxShadow: "0 8px 18px rgba(6,182,212,0.4)",
-            },
-          }}
-        >
-          See all
-          <ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />
-        </Box>
+          </>
+        )}
       </Box>
-
-      {visible.length === 0 ? (
-        <Box
-          sx={{
-            py: 4,
-            textAlign: "center",
-            borderRadius: 2.5,
-            bgcolor: "#ecfeff",
-            border: "1px dashed #a5f3fc",
-          }}
-        >
-          <Typography
-            sx={{
-              fontFamily: FONT_BODY,
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#94a3b8",
-            }}
-          >
-            No restaurants to display yet.
-          </Typography>
-        </Box>
-      ) : (
-        <StoryRail
-          accentColor="#0e7490"
-          deps={[visible.length]}
-          autoScroll
-        >
-          {visible.map((r, i) => (
-            <Box key={r.id || i}>{renderCard(r)}</Box>
-          ))}
-        </StoryRail>
-      )}
     </Box>
   );
 }
