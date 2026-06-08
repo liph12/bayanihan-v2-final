@@ -16,7 +16,10 @@ const SAFETY_MS = 8000; // hard backstop so a missed "finish" can't freeze it
 
 export default function GlobalLoader() {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(true); // visible from first paint
+  // Starts hidden: the loader only appears for in-app navigations, NOT on the
+  // initial page load — the SSR content is already painted, so covering it
+  // would only delay first paint / LCP.
+  const [visible, setVisible] = useState(false);
 
   const shownAt = useRef(0);
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -46,15 +49,14 @@ export default function GlobalLoader() {
     }, wait);
   }, []);
 
-  // Initial load: shown from SSR; hide once mounted (hydrated/interactive).
+  // Clean up any pending timers on unmount (set by show()/hide() during
+  // navigations). No initial-load show — see the `visible` initializer above.
   useEffect(() => {
-    shownAt.current = performance.now();
-    hide();
     return () => {
       if (hideTimer.current) clearTimeout(hideTimer.current);
       if (safetyTimer.current) clearTimeout(safetyTimer.current);
     };
-  }, [hide]);
+  }, []);
 
   // Navigation finished when the path commits. Skip the first run (mount).
   useEffect(() => {

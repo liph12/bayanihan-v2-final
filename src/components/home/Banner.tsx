@@ -152,6 +152,10 @@ export default function Banner({
   initialCountries = [],
 }: BannerProps) {
   const [active, setActive] = useState(0);
+  // Only the active slide (and the next, ready for the cross-fade) load their
+  // background image — loading all 7 hero images at once was wrecking LCP
+  // under throttled connections.
+  const [loaded, setLoaded] = useState<Set<number>>(() => new Set([0]));
   const [searchResults, setSearchResults] = useState<SearchResult[] | null>(
     null
   );
@@ -171,6 +175,20 @@ export default function Banner({
     );
     return () => clearInterval(id);
   }, [images.length]);
+
+  // Lazily mark the current + next slide as loaded so their images are
+  // fetched just-in-time rather than all upfront.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoaded((prev) => {
+      const next = (active + 1) % images.length;
+      if (prev.has(active) && prev.has(next)) return prev;
+      const s = new Set(prev);
+      s.add(active);
+      s.add(next);
+      return s;
+    });
+  }, [active, images.length]);
 
   const onSearchChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -199,6 +217,8 @@ export default function Banner({
 
   return (
     <Box component="section" sx={sx.container}>
+      {/* Preload only the first hero image so the LCP paints fast. */}
+      <link rel="preload" as="image" href={images[0]} fetchPriority="high" />
       <Box sx={sx.wrap}>
         {images.map((src, idx) => (
           <Box
@@ -206,7 +226,7 @@ export default function Banner({
             sx={{
               ...sx.slideBase,
               ...(idx === active ? sx.slideActive : {}),
-              backgroundImage: `url(${src})`,
+              backgroundImage: loaded.has(idx) ? `url(${src})` : "none",
             }}
             aria-hidden={idx !== active}
           />
