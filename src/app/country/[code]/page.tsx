@@ -61,11 +61,22 @@ export async function generateMetadata({
   const country = findCountry(code);
   if (!country) return { title: "Country Not Found" };
   const canonical = `/country/${code.toLowerCase()}`;
-  const title = `Filipino Events in ${country.name}`;
-  const description = `Discover Filipino events, festivals, and community gatherings happening in ${country.name}. Stay connected with the Filipino community worldwide on Bayanihan.com.`;
+  // Title carries the main query plus its common variants (gatherings,
+  // festivals) so it ranks for "Filipino events/gatherings/festivals in X".
+  const title = `Filipino Events, Festivals & Gatherings in ${country.name}`;
+  const description = `Find Filipino events, festivals, and community gatherings happening in ${country.name}. Connect with the Filipino community and discover what's on near you — on Bayanihan.com.`;
   return {
     title,
     description,
+    keywords: [
+      `Filipino events in ${country.name}`,
+      `Filipino gatherings in ${country.name}`,
+      `Filipino festivals in ${country.name}`,
+      `Filipino community in ${country.name}`,
+      `OFW events in ${country.name}`,
+      "Filipino events",
+      "Filipino community worldwide",
+    ],
     alternates: { canonical },
     openGraph: {
       title,

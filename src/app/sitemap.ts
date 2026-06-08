@@ -6,6 +6,7 @@
 import type { MetadataRoute } from "next";
 import { serverGet } from "@/lib/serverFetch";
 import { POPULAR_ORDER } from "@/lib/popularCountries";
+import { countryCodes } from "@/lib/countryCodes";
 import { ARTICLES, articleUrl } from "@/lib/articles";
 import type { BayanihanEvent, NewsArticle, Restaurant } from "@/types";
 
@@ -136,6 +137,21 @@ async function fetchNews(): Promise<NewsArticle[]> {
   }
 }
 
+// Map an event's free-text country (a name like "Singapore" or a code like
+// "SG") to a known 2-letter code, so we can emit its /country/<code> page.
+function eventCountryCode(item: BayanihanEvent): string | undefined {
+  const raw = String((item as { country?: string }).country || "").trim();
+  if (!raw) return undefined;
+  const up = raw.toUpperCase();
+  const byCode = countryCodes.find((c) => c.code.toUpperCase() === up);
+  if (byCode) return byCode.code;
+  const norm = raw.toLowerCase().replace(/\s+/g, "");
+  const byName = countryCodes.find(
+    (c) => c.name.toLowerCase().replace(/\s+/g, "") === norm
+  );
+  return byName?.code;
+}
+
 function subdomainOf(item: BayanihanEvent | Restaurant): string | undefined {
   const sub = (item as { subDomain?: { name?: string } }).subDomain?.name;
   if (sub) return sub;
@@ -181,10 +197,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // Popular country pages live under /country/<code>. Only the 14 we
-  // surface on the homepage are guaranteed to have content worth indexing,
-  // so we don't emit one entry per ISO country.
-  for (const cc of POPULAR_ORDER) {
+  // Country pages live under /country/<code>. Index the popular set (always)
+  // PLUS any country that currently has at least one event — so pages like
+  // /country/hk get crawled the moment they have content, while empty/thin
+  // country pages stay out of the sitemap. New countries appear automatically
+  // as events are added (this list regenerates with the sitemap).
+  const countryCodesToIndex = new Set<string>(POPULAR_ORDER);
+  for (const e of events) {
+    const cc = eventCountryCode(e);
+    if (cc) countryCodesToIndex.add(cc);
+  }
+  for (const cc of countryCodesToIndex) {
     entries.push({
       url: `${SITE_URL}/country/${cc.toLowerCase()}`,
       lastModified: now,
