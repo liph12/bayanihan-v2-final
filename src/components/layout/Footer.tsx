@@ -16,6 +16,8 @@ import Grid from "@mui/material/Grid2";
 import NextLink from "next/link";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import XIcon from "@mui/icons-material/X";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { useLocale } from "@/providers/LocaleProvider";
 import { useAuthProvider } from "@/providers/AuthProvider";
@@ -29,6 +31,25 @@ import {
 
 const BG = "#ECEAE3";
 const LOGO_SRC = "/profile/logo.png";
+
+// Social-sharing links (share the site). Plain anchors so they're crawlable
+// and need no JS.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bayanihan.com";
+const SHARE_TEXT =
+  "Discover Filipino events, festivals & restaurants worldwide on Bayanihan.com";
+const SHARE_LINKS = {
+  facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(SITE_URL)}`,
+  x: `https://twitter.com/intent/tweet?url=${encodeURIComponent(SITE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`,
+  linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SITE_URL)}`,
+};
+const shareIconSx = (color: string) => ({
+  width: 32,
+  height: 32,
+  borderRadius: "50%",
+  color,
+  bgcolor: "#fff",
+  "&:hover": { bgcolor: color, color: "#fff" },
+});
 
 type LangKey =
   | "discover"
@@ -470,6 +491,48 @@ export default function Footer() {
               aria-label="WhatsApp"
             >
               <WhatsAppIcon fontSize="small" />
+            </IconButton>
+
+            {/* Divider between "follow" profiles and "share this page" */}
+            <Box
+              sx={{
+                width: "1px",
+                height: 20,
+                bgcolor: "rgba(0,0,0,0.15)",
+                mx: 0.5,
+                alignSelf: "center",
+              }}
+            />
+            {/* Share Bayanihan.com */}
+            <IconButton
+              component="a"
+              href={SHARE_LINKS.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share Bayanihan.com on Facebook"
+              sx={shareIconSx("#1877F2")}
+            >
+              <FacebookIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              component="a"
+              href={SHARE_LINKS.x}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share Bayanihan.com on X"
+              sx={shareIconSx("#000000")}
+            >
+              <XIcon fontSize="small" />
+            </IconButton>
+            <IconButton
+              component="a"
+              href={SHARE_LINKS.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Share Bayanihan.com on LinkedIn"
+              sx={shareIconSx("#0A66C2")}
+            >
+              <LinkedInIcon fontSize="small" />
             </IconButton>
           </Box>
         </Box>
