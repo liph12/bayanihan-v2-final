@@ -41,11 +41,16 @@ interface RestaurantsResponse {
   restaurant?: Restaurant[];
 }
 
+// The events section starts on this country; the picker fetches others
+// client-side. Keep it in POPULAR_ORDER so it appears in the dropdown.
+const DEFAULT_EVENTS_COUNTRY = "SG";
+
 async function getEvents(): Promise<BayanihanEvent[]> {
   try {
-    const data = await serverGet<EventsResponse | BayanihanEvent[]>("events", {
-      revalidate: 60,
-    });
+    const data = await serverGet<EventsResponse | BayanihanEvent[]>(
+      `events-list/${DEFAULT_EVENTS_COUNTRY}`,
+      { revalidate: 300 }
+    );
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.data?.events)) return data.data!.events!;
     if (Array.isArray(data?.events)) return data.events!;
@@ -175,7 +180,10 @@ export default async function HomePage() {
           transparent so the whole homepage reads as a single surface. */}
       <div style={{ background: "#ffffff", flexGrow: 1 }}>
         <Banner initialCountries={countries} />
-        <EventsSection initialEvents={events} />
+        <EventsSection
+          initialEvents={events}
+          initialCountry={DEFAULT_EVENTS_COUNTRY}
+        />
         <RestaurantsSection initialRestaurants={restaurants} />
         <NewsSection initialArticles={news} />
         <TopDestinations />

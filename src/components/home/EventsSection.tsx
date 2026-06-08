@@ -1,139 +1,117 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
-import { Box, Typography } from "@mui/material";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Box, Typography, Select, MenuItem, Skeleton, Stack } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import NextLink from "next/link";
-import AxiosInstance from "@/lib/AxiosInstance";
-import { useLocale } from "@/providers/LocaleProvider";
 import EventRoundedIcon from "@mui/icons-material/EventRounded";
+import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
-import CelebrationRoundedIcon from "@mui/icons-material/CelebrationRounded";
-import type { BayanihanEvent } from "@/types";
+import AxiosInstance from "@/lib/AxiosInstance";
 import { eventUrl } from "@/lib/eventUrl";
-import StoryRail from "./StoryRail";
+import { countryCodes } from "@/lib/countryCodes";
+import { POPULAR_ORDER } from "@/lib/popularCountries";
+import type { BayanihanEvent } from "@/types";
 
 const FONT_HEAD = "var(--font-urbanist), 'Outfit', sans-serif";
 const FONT_BODY = "var(--font-outfit), 'Outfit', sans-serif";
 const ACCENT_GRADIENT =
   "linear-gradient(135deg, #c2410c 0%, #F77F00 50%, #FBA833 100%)";
 
+// Countries offered in the picker — the popular set, with names/flags.
+const COUNTRY_OPTIONS = POPULAR_ORDER.map((code) =>
+  countryCodes.find((c) => c.code.toUpperCase() === code)
+).filter((c): c is { code: string; name: string } => Boolean(c));
+
+const MAX_CARDS = 8;
+
 interface EventsSectionProps {
+  /** Events for `initialCountry`, fetched on the server for the first paint. */
   initialEvents?: BayanihanEvent[];
+  /** ISO code the picker starts on (must be in POPULAR_ORDER). */
+  initialCountry?: string;
 }
 
-function formatDate(input?: string): string | null {
-  if (!input) return null;
-  const d = new Date(input);
-  if (isNaN(d.getTime())) return input;
-  return d.toLocaleDateString(undefined, {
-    month: "short",
-    day: "numeric",
-  });
+function extractEvents(payload: unknown): BayanihanEvent[] {
+  const d = payload as
+    | { data?: { events?: BayanihanEvent[] }; events?: BayanihanEvent[] }
+    | BayanihanEvent[]
+    | undefined;
+  if (Array.isArray(d)) return d;
+  if (Array.isArray(d?.data?.events)) return d!.data!.events!;
+  if (Array.isArray(d?.events)) return d!.events!;
+  return [];
 }
 
-// Full date including year — shown only in the hover-expanded state, where
-// there's room for the extra context.
-function formatDateLong(input?: string): string | null {
-  if (!input) return null;
+function ts(ev: BayanihanEvent): number {
+  const v = ev?.eventDate || ev?.date;
+  const p = Date.parse(v || "");
+  return Number.isNaN(p) ? 0 : p;
+}
+
+function formatDate(input?: string | null): string {
+  if (!input) return "Date TBA";
   const d = new Date(input);
-  if (isNaN(d.getTime())) return input;
+  if (Number.isNaN(d.getTime())) return "Date TBA";
   return d.toLocaleDateString(undefined, {
     weekday: "short",
     month: "short",
     day: "numeric",
-    year: "numeric",
   });
 }
 
-export default function EventsSection({
-  initialEvents = [],
-}: EventsSectionProps) {
-  const [events, setEvents] = useState<BayanihanEvent[]>(initialEvents);
-  const { t } = useLocale();
+const flagUrl = (code: string, w = 40) =>
+  `https://flagcdn.com/w${w}/${code.toLowerCase()}.png`;
 
-  useEffect(() => {
-    if (initialEvents.length > 0) return;
-    let mounted = true;
-    (async () => {
-      try {
-        const resp = await AxiosInstance.get<unknown>("events");
-        const d = resp?.data as
-          | { data?: { events?: BayanihanEvent[] }; events?: BayanihanEvent[] }
-          | BayanihanEvent[]
-          | undefined;
-        const arr: BayanihanEvent[] = Array.isArray(d)
-          ? d
-          : Array.isArray(d?.data?.events)
-          ? d.data!.events!
-          : Array.isArray(d?.events)
-          ? d.events!
-          : [];
-        if (mounted) setEvents(arr);
-      } catch {
-        if (mounted) setEvents([]);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [initialEvents.length]);
+// Extracted to module scope so the impure Date.now() call doesn't trip the
+// React Compiler purity check that fires on calls made inside render/hooks.
+// Upcoming first (soonest); falls back to whatever's returned if none parse.
+function pickUpcoming(events: BayanihanEvent[]): BayanihanEvent[] {
+  const now = Date.now();
+  const upcoming = events
+    .filter((e) => ts(e) >= now)
+    .sort((a, b) => ts(a) - ts(b));
+  return (upcoming.length > 0 ? upcoming : events).slice(0, MAX_CARDS);
+}
 
-  const visible = useMemo(() => events.slice(0, 30), [events]);
+function EventCard({
+  ev,
+  fallbackCountry,
+}: {
+  ev: BayanihanEvent;
+  fallbackCountry: string;
+}) {
+  const href = eventUrl(ev) || "#";
+  const isExternal = href.startsWith("http");
+  const date = formatDate(ev?.eventDate || ev?.date);
+  const location = (ev as { location?: string })?.location || fallbackCountry;
 
-  const renderCard = (ev: BayanihanEvent) => {
-    const link = eventUrl(ev);
-    const isExternal = link.startsWith("http");
-    const date = formatDate(ev?.eventDate || ev?.date);
-    const dateLong = formatDateLong(ev?.eventDate || ev?.date);
-    const host = ev?.subDomain?.name;
-
-    const card = (
+  const card = (
+    <Box
+      sx={{
+        position: "relative",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        borderRadius: 3,
+        overflow: "hidden",
+        bgcolor: "#fff",
+        border: "1px solid #f1e3c8",
+        boxShadow: "0 6px 16px rgba(15,23,42,0.06)",
+        transition: "all .3s cubic-bezier(0.22, 1, 0.36, 1)",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: "0 18px 36px rgba(15,23,42,0.12)",
+          "& .ev-img": { transform: "scale(1.05)" },
+        },
+      }}
+    >
       <Box
         sx={{
           position: "relative",
-          // Explicit width + height (no aspectRatio) so the card can grow
-          // horizontally on hover without dragging its height with it —
-          // otherwise the whole rail row would jump vertically on hover.
-          // Heights below equal width * 16/9 so the compact state still
-          // looks identical to the previous 9:16 portrait poster.
-          width: { xs: 140, sm: 160, md: 180 },
-          height: { xs: 249, sm: 284, md: 320 },
-          flexShrink: 0,
-          scrollSnapAlign: "start",
-          borderRadius: 2.5,
+          width: "100%",
+          aspectRatio: "16 / 10",
           overflow: "hidden",
           bgcolor: "#0f172a",
-          boxShadow: "0 6px 16px rgba(15,23,42,0.12)",
-          cursor: "pointer",
-          transition:
-            "width .35s cubic-bezier(0.22, 1, 0.36, 1), transform .35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow .35s",
-          // Only fire the expand effect on devices that actually support
-          // hovering. Touch devices keep the compact tap-to-open behavior.
-          "@media (hover: hover)": {
-            "&:hover": {
-              width: { xs: 240, sm: 300, md: 340 },
-              transform: "translateY(-4px)",
-              boxShadow: "0 18px 36px rgba(15,23,42,0.22)",
-              "& .ev-img": { transform: "scale(1.08)" },
-              "& .ev-title": { WebkitLineClamp: 3 },
-              "& .ev-extra": {
-                opacity: 1,
-                transform: "translateY(0)",
-                pointerEvents: "auto",
-              },
-            },
-          },
-          // Touch / mobile can't hover, so present the expanded state by
-          // default: a wider card with the details and "View event" button
-          // always visible.
-          "@media (hover: none), (max-width: 600px)": {
-            width: { xs: 240, sm: 300 },
-            "& .ev-title": { WebkitLineClamp: 3 },
-            "& .ev-extra": {
-              opacity: 1,
-              transform: "translateY(0)",
-              pointerEvents: "auto",
-            },
-          },
         }}
       >
         {ev?.image ? (
@@ -142,334 +120,325 @@ export default function EventsSection({
             className="ev-img"
             src={ev.image}
             alt={ev.title || "Event"}
+            loading="lazy"
             style={{
               position: "absolute",
               inset: 0,
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              display: "block",
               transition: "transform .5s cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           />
         ) : (
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              background: ACCENT_GRADIENT,
-              display: "grid",
-              placeItems: "center",
-              color: "#fff",
-            }}
-          >
-            <CelebrationRoundedIcon sx={{ fontSize: 36, opacity: 0.8 }} />
-          </Box>
+          <Box sx={{ position: "absolute", inset: 0, background: ACCENT_GRADIENT }} />
         )}
+      </Box>
 
-        <Box
-          aria-hidden
+      <Box sx={{ p: { xs: 2, md: 2.25 }, display: "flex", flexDirection: "column", gap: 1, flex: 1 }}>
+        <Typography
           sx={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(180deg, rgba(15,23,42,0.32) 0%, transparent 30%, transparent 50%, rgba(15,23,42,0.9) 100%)",
-          }}
-        />
-
-        {date && (
-          <Box
-            sx={{
-              position: "absolute",
-              top: 10,
-              left: 10,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.4,
-              px: 1,
-              py: 0.4,
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.22)",
-              backdropFilter: "blur(8px)",
-              WebkitBackdropFilter: "blur(8px)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              color: "#fff",
-              fontFamily: FONT_HEAD,
-              fontSize: 11.5,
-              fontWeight: 800,
-              letterSpacing: "0.04em",
-            }}
-          >
-            <EventRoundedIcon sx={{ fontSize: 12 }} />
-            {date}
-          </Box>
-        )}
-
-        <Box
-          sx={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            p: 1.25,
-            color: "#fff",
+            fontFamily: FONT_HEAD,
+            fontWeight: 800,
+            fontSize: { xs: 15, md: 16 },
+            lineHeight: 1.3,
+            color: "#0f172a",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
           }}
         >
-          <Typography
-            className="ev-title"
+          {ev?.title || "Untitled event"}
+        </Typography>
+
+        <Box
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            color: "#c2410c",
+            fontFamily: FONT_BODY,
+            fontSize: 12.5,
+            fontWeight: 700,
+          }}
+        >
+          <EventRoundedIcon sx={{ fontSize: 14 }} />
+          {date}
+        </Box>
+
+        <Box
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            color: "#64748b",
+            fontFamily: FONT_BODY,
+            fontSize: 12,
+            fontWeight: 600,
+            mt: "auto",
+          }}
+        >
+          <LocationOnRoundedIcon sx={{ fontSize: 13 }} />
+          <Box
+            component="span"
             sx={{
-              fontFamily: FONT_HEAD,
-              fontSize: { xs: 14, md: 15 },
-              fontWeight: 800,
-              lineHeight: 1.25,
-              letterSpacing: "-0.005em",
               display: "-webkit-box",
-              WebkitLineClamp: 2,
+              WebkitLineClamp: 1,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
-              textShadow: "0 2px 6px rgba(0,0,0,0.5)",
-              transition: "all .3s ease",
             }}
           >
-            {ev?.title || "Untitled Event"}
-          </Typography>
-
-          {/*
-            Hover-only "extra" panel. Hidden until the card expands; the
-            parent's @media (hover: hover) &:hover rule reveals it.
-            pointerEvents is disabled while hidden so it can't intercept
-            clicks meant for the card link beneath.
-          */}
-          <Box
-            className="ev-extra"
-            sx={{
-              mt: 0.75,
-              opacity: 0,
-              transform: "translateY(6px)",
-              pointerEvents: "none",
-              transition:
-                "opacity .25s ease .05s, transform .3s cubic-bezier(0.22, 1, 0.36, 1) .05s",
-            }}
-          >
-            {dateLong && (
-              <Typography
-                sx={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  color: "rgba(255,255,255,0.85)",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                }}
-              >
-                {dateLong}
-              </Typography>
-            )}
-            {host && (
-              <Typography
-                sx={{
-                  fontFamily: FONT_BODY,
-                  fontSize: 11,
-                  fontWeight: 500,
-                  color: "rgba(255,255,255,0.7)",
-                  mt: 0.25,
-                  display: "-webkit-box",
-                  WebkitLineClamp: 1,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  textShadow: "0 1px 4px rgba(0,0,0,0.5)",
-                }}
-              >
-                Hosted by {host}
-              </Typography>
-            )}
-            <Box
-              sx={{
-                mt: 1,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 0.4,
-                px: 1.1,
-                py: 0.4,
-                borderRadius: 999,
-                background: ACCENT_GRADIENT,
-                color: "#fff",
-                fontFamily: FONT_HEAD,
-                fontSize: 11,
-                fontWeight: 800,
-                letterSpacing: "0.02em",
-                boxShadow: "0 6px 14px rgba(247,127,0,0.35)",
-              }}
-            >
-              View event
-              <ArrowForwardRoundedIcon sx={{ fontSize: 12 }} />
-            </Box>
+            {location}
           </Box>
         </Box>
       </Box>
-    );
+    </Box>
+  );
 
-    return isExternal ? (
-      <a
-        href={link}
-        draggable={false}
-        style={{ textDecoration: "none", color: "inherit", display: "block" }}
-      >
-        {card}
-      </a>
-    ) : (
-      <NextLink
-        href={link}
-        draggable={false}
-        style={{ textDecoration: "none", color: "inherit", display: "block" }}
-      >
-        {card}
-      </NextLink>
-    );
-  };
+  const linkStyle = {
+    textDecoration: "none",
+    color: "inherit",
+    display: "block",
+    height: "100%",
+  } as const;
+
+  return isExternal ? (
+    <a href={href} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+      {card}
+    </a>
+  ) : (
+    <NextLink href={href} style={linkStyle}>
+      {card}
+    </NextLink>
+  );
+}
+
+export default function EventsSection({
+  initialEvents = [],
+  initialCountry = "SG",
+}: EventsSectionProps) {
+  const [country, setCountry] = useState(initialCountry.toUpperCase());
+  const [events, setEvents] = useState<BayanihanEvent[]>(initialEvents);
+  const [loading, setLoading] = useState(false);
+  const firstRun = useRef(true);
+
+  useEffect(() => {
+    // First mount: reuse the server-fetched events for the initial country.
+    // Any country change: fetch that country's events client-side.
+    if (firstRun.current) {
+      firstRun.current = false;
+      if (initialEvents.length > 0) return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    (async () => {
+      try {
+        const resp = await AxiosInstance.get(`events-list/${country}`);
+        if (!cancelled) setEvents(extractEvents(resp?.data));
+      } catch {
+        if (!cancelled) setEvents([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [country]);
+
+  const countryName =
+    COUNTRY_OPTIONS.find((c) => c.code.toUpperCase() === country)?.name ||
+    country;
+
+  const list = useMemo(() => pickUpcoming(events), [events]);
 
   return (
-    <Box
-      sx={{
-        position: "relative",
-        px: { xs: 2, md: 4, lg: 5 },
-        py: { xs: 2.5, md: 3 },
-      }}
-    >
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 2,
-          mb: 1.5,
-        }}
-      >
-        <Box>
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.6,
-              px: 1,
-              py: 0.25,
-              borderRadius: 999,
-              bgcolor: "#fff4dd",
-              border: "1px solid #fde2b3",
-              color: "#c2410c",
-              fontFamily: FONT_HEAD,
-              fontSize: 9.5,
-              fontWeight: 800,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              mb: 0.75,
-            }}
-          >
-            <CelebrationRoundedIcon sx={{ fontSize: 11 }} />
-            Events
-            {events.length > 0 && (
-              <Box
-                component="span"
-                sx={{
-                  ml: 0.5,
-                  pl: 0.75,
-                  borderLeft: "1px solid #fde2b3",
-                  color: "#0f172a",
-                  fontWeight: 900,
-                }}
-              >
-                {events.length}
-              </Box>
-            )}
-          </Box>
+    <Box sx={{ position: "relative", px: { xs: 2, md: 4, lg: 5 }, py: { xs: 2.5, md: 3 } }}>
+      <Box sx={{ maxWidth: 1650, mx: "auto" }}>
+        {/* ── Header: Discover Events in [country picker] ── */}
+        <Stack direction="row" alignItems="center" flexWrap="wrap" gap={1}>
           <Typography
             component="h2"
             sx={{
               fontFamily: FONT_HEAD,
-              fontWeight: 900,
-              fontSize: { xs: 18, sm: 20, md: 22 },
-              lineHeight: 1.15,
-              letterSpacing: "-0.015em",
+              fontWeight: 800,
+              fontSize: { xs: 22, md: 30 },
               color: "#0f172a",
             }}
           >
-            {t("discoverEventsTitle") || "Discover Filipino events"}
-            <Box
-              component="span"
-              sx={{
-                background: ACCENT_GRADIENT,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              .
-            </Box>
+            Discover Events in
           </Typography>
-        </Box>
-
-        <Box
-          component={NextLink}
-          href="/browse-events"
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.3,
-            px: 1.25,
-            py: 0.55,
-            borderRadius: 999,
-            fontFamily: FONT_HEAD,
-            fontSize: 11.5,
-            fontWeight: 800,
-            color: "#fff",
-            textDecoration: "none",
-            background: ACCENT_GRADIENT,
-            boxShadow: "0 6px 14px rgba(247,127,0,0.28)",
-            transition: "all .2s ease",
-            flexShrink: 0,
-            "&:hover": {
-              transform: "translateY(-1px)",
-              boxShadow: "0 8px 18px rgba(247,127,0,0.4)",
-            },
-          }}
-        >
-          See all
-          <ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />
-        </Box>
-      </Box>
-
-      {visible.length === 0 ? (
-        <Box
-          sx={{
-            py: 4,
-            textAlign: "center",
-            borderRadius: 2.5,
-            bgcolor: "#fff8ec",
-            border: "1px dashed #fde2b3",
-          }}
-        >
-          <Typography
+          <Select
+            value={country}
+            onChange={(e) => setCountry(String(e.target.value))}
+            variant="standard"
+            disableUnderline
+            renderValue={(val) => {
+              const c = String(val);
+              const name =
+                COUNTRY_OPTIONS.find((o) => o.code.toUpperCase() === c)?.name || c;
+              return (
+                <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={flagUrl(c)}
+                    alt=""
+                    width={28}
+                    height={20}
+                    style={{ borderRadius: 3, objectFit: "cover", display: "block" }}
+                  />
+                  <Box
+                    component="span"
+                    sx={{
+                      fontFamily: FONT_HEAD,
+                      fontWeight: 800,
+                      fontSize: { xs: 22, md: 30 },
+                      background: ACCENT_GRADIENT,
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                    }}
+                  >
+                    {name}
+                  </Box>
+                </Box>
+              );
+            }}
             sx={{
-              fontFamily: FONT_BODY,
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#94a3b8",
+              "& .MuiSelect-select": {
+                display: "inline-flex",
+                alignItems: "center",
+                p: 0,
+                pr: "30px !important",
+              },
+              "& .MuiSelect-icon": { color: "#F77F00", right: 0 },
+            }}
+            MenuProps={{ PaperProps: { sx: { maxHeight: 380, borderRadius: 2 } } }}
+          >
+            {COUNTRY_OPTIONS.map((c) => (
+              <MenuItem
+                key={c.code}
+                value={c.code.toUpperCase()}
+                sx={{ fontFamily: FONT_BODY, gap: 1.25 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={flagUrl(c.code)}
+                  alt=""
+                  width={22}
+                  height={16}
+                  style={{ borderRadius: 2, objectFit: "cover", display: "block" }}
+                />
+                {c.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </Stack>
+
+        <Typography
+          sx={{
+            fontFamily: FONT_BODY,
+            color: "#64748b",
+            fontSize: { xs: 14, md: 15 },
+            mt: 0.5,
+            mb: 3,
+          }}
+        >
+          Filipino events, festivals, and gatherings in {countryName}.
+        </Typography>
+
+        {/* ── Grid ── */}
+        {loading ? (
+          <Grid container spacing={{ xs: 2, md: 3 }}>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={i}>
+                <Skeleton
+                  variant="rounded"
+                  sx={{ width: "100%", aspectRatio: "16/10", borderRadius: 3 }}
+                />
+                <Skeleton width="80%" sx={{ mt: 1 }} />
+                <Skeleton width="50%" />
+              </Grid>
+            ))}
+          </Grid>
+        ) : list.length === 0 ? (
+          <Box
+            sx={{
+              py: 6,
+              textAlign: "center",
+              borderRadius: 3,
+              bgcolor: "#fff8ec",
+              border: "1px dashed #fde2b3",
             }}
           >
-            No events to display yet.
-          </Typography>
-        </Box>
-      ) : (
-        <StoryRail
-          accentColor="#c2410c"
-          deps={[visible.length]}
-          autoScroll
-        >
-          {visible.map((ev, i) => (
-            <Box key={ev.id || i}>{renderCard(ev)}</Box>
-          ))}
-        </StoryRail>
-      )}
+            <Typography sx={{ fontFamily: FONT_HEAD, fontWeight: 800, color: "#0f172a", mb: 1 }}>
+              No upcoming events in {countryName} yet
+            </Typography>
+            <Typography sx={{ fontFamily: FONT_BODY, fontSize: 14, color: "#64748b", mb: 3 }}>
+              Try another country, or browse everything happening worldwide.
+            </Typography>
+            <NextLink href="/browse-events" style={{ textDecoration: "none" }}>
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  px: 2.5,
+                  py: 1.25,
+                  borderRadius: 999,
+                  fontFamily: FONT_HEAD,
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: "#fff",
+                  background: ACCENT_GRADIENT,
+                  boxShadow: "0 8px 18px rgba(247,127,0,0.3)",
+                }}
+              >
+                Browse all events
+              </Box>
+            </NextLink>
+          </Box>
+        ) : (
+          <>
+            <Grid container spacing={{ xs: 2, md: 3 }}>
+              {list.map((ev, i) => (
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={ev.id || `ev-${i}`}>
+                  <EventCard ev={ev} fallbackCountry={countryName} />
+                </Grid>
+              ))}
+            </Grid>
+            <Box sx={{ mt: 3.5, display: "flex", justifyContent: "center" }}>
+              <NextLink
+                href={`/country/${country.toLowerCase()}`}
+                style={{ textDecoration: "none" }}
+              >
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    px: 3,
+                    py: 1.25,
+                    borderRadius: 999,
+                    fontFamily: FONT_HEAD,
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: "#c2410c",
+                    border: "2px solid #fde2b3",
+                    transition: "background .2s",
+                    "&:hover": { background: "#fff8ec" },
+                  }}
+                >
+                  See all events in {countryName}
+                  <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
+                </Box>
+              </NextLink>
+            </Box>
+          </>
+        )}
+      </Box>
     </Box>
   );
 }
