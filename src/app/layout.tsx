@@ -64,9 +64,13 @@ export const metadata: Metadata = {
   creator: "Bayanihan.com",
   publisher: "Bayanihan.com",
   category: "Filipino community, events, and restaurants",
-  // Icons are auto-discovered from app/icon.tsx + app/apple-icon.tsx —
-  // Next emits <link rel="icon"> and <link rel="apple-touch-icon"> for us.
-  // Also auto-emits <link rel="manifest"> from app/manifest.ts.
+  // Browser-tab favicon comes from /public/favicon.ico. The apple-touch-icon
+  // is still auto-generated from app/apple-icon.tsx, and the web manifest from
+  // app/manifest.ts.
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+  },
   // ---------------------------------------------------------------------
   // Search Console / Webmaster Tools verification.
   //
