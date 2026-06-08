@@ -27,7 +27,12 @@ const COUNTRY_OPTIONS: { code: string; name: string }[] = [
   ).filter((c): c is { code: string; name: string } => Boolean(c)),
 ];
 
-const MAX_CARDS = 8;
+const MAX_CARDS = 10;
+
+// 20-column base so cards divide evenly into 5 per row on large screens
+// (12-col MUI default only gives 4). Responsive: 1 / 2 / 4 / 5 per row.
+const GRID_COLUMNS = 20;
+const CARD_SIZE = { xs: 20, sm: 10, md: 5, lg: 4 };
 
 interface EventsSectionProps {
   /** Events for `initialCountry`, fetched on the server for the first paint. */
@@ -374,9 +379,9 @@ export default function EventsSection({
 
         {/* ── Grid ── */}
         {loading ? (
-          <Grid container spacing={{ xs: 2, md: 3 }}>
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={i}>
+          <Grid container columns={GRID_COLUMNS} spacing={{ xs: 2, md: 3 }}>
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Grid size={CARD_SIZE} key={i}>
                 <Skeleton
                   variant="rounded"
                   sx={{ width: "100%", aspectRatio: "16/10", borderRadius: 3 }}
@@ -427,9 +432,9 @@ export default function EventsSection({
           </Box>
         ) : (
           <>
-            <Grid container spacing={{ xs: 2, md: 3 }}>
+            <Grid container columns={GRID_COLUMNS} spacing={{ xs: 2, md: 3 }}>
               {list.map((ev, i) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={ev.id || `ev-${i}`}>
+                <Grid size={CARD_SIZE} key={ev.id || `ev-${i}`}>
                   <EventCard ev={ev} fallbackCountry={isAll ? "" : selectedName} />
                 </Grid>
               ))}
