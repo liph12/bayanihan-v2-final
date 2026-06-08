@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Don't advertise the framework via the X-Powered-By response header.
+  poweredByHeader: false,
+
   // Serve modern image formats (smaller than JPEG/PNG) when next/image is used.
   images: {
     formats: ["image/avif", "image/webp"],
