@@ -87,7 +87,8 @@ export const metadata: Metadata = {
   // bogus ones that might fail verification later.
   // ---------------------------------------------------------------------
   verification: {
-    // google: "REPLACE_WITH_GOOGLE_SEARCH_CONSOLE_VERIFICATION_TOKEN",
+    // Google Search Console — emits <meta name="google-site-verification" …>.
+    google: "PN7sa64np1aDfaD2gwBvawz6FPvcCeO10F_ILjzN0V0",
     // yandex: "REPLACE_WITH_YANDEX_VERIFICATION_TOKEN",
     // other: {
     //   "msvalidate.01": "REPLACE_WITH_BING_WEBMASTER_VERIFICATION_TOKEN",
