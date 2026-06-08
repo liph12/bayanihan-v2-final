@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { serverGet } from "@/lib/serverFetch";
@@ -25,7 +26,12 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-async function getArticle(slug: string): Promise<NewsArticle | null> {
+// Wrapped in React cache() so it runs at most ONCE per request. The page
+// calls getArticle() in both generateMetadata() and the page component, and
+// the single-article endpoint increments views_count on every fetch — without
+// this dedupe, every page load counted 2 views. cache() makes both callers
+// share a single fetch (one view per load).
+const getArticle = cache(async (slug: string): Promise<NewsArticle | null> => {
   try {
     // Note: the single-article endpoint increments views_count on every fetch,
     // so we bypass the Next cache to ensure each visit counts.
@@ -48,7 +54,7 @@ async function getArticle(slug: string): Promise<NewsArticle | null> {
   } catch {
     return null;
   }
-}
+});
 
 async function getRelatedAndAll(slug: string) {
   try {
