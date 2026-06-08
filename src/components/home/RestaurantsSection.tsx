@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Box, Typography, Skeleton } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import NextLink from "next/link";
+import Image from "next/image";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import RestaurantRoundedIcon from "@mui/icons-material/RestaurantRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
@@ -73,17 +74,13 @@ function RestaurantCard({ r }: { r: Restaurant }) {
         }}
       >
         {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             className="rs-img"
             src={image}
             alt={r.name || "Restaurant"}
-            loading="lazy"
+            fill
+            sizes="(max-width:600px) 100vw, (max-width:900px) 50vw, (max-width:1200px) 25vw, 20vw"
             style={{
-              position: "absolute",
-              inset: 0,
-              width: "100%",
-              height: "100%",
               objectFit: "cover",
               transition: "transform .5s cubic-bezier(0.22, 1, 0.36, 1)",
             }}

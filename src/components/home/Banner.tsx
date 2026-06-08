@@ -17,6 +17,7 @@ import {
   InputAdornment,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
+import Image from "next/image";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoIcon from "@mui/icons-material/Info";
 import AxiosInstance from "@/lib/AxiosInstance";
@@ -217,8 +218,6 @@ export default function Banner({
 
   return (
     <Box component="section" sx={sx.container}>
-      {/* Preload only the first hero image so the LCP paints fast. */}
-      <link rel="preload" as="image" href={images[0]} fetchPriority="high" />
       <Box sx={sx.wrap}>
         {images.map((src, idx) => (
           <Box
@@ -226,10 +225,20 @@ export default function Banner({
             sx={{
               ...sx.slideBase,
               ...(idx === active ? sx.slideActive : {}),
-              backgroundImage: loaded.has(idx) ? `url(${src})` : "none",
             }}
             aria-hidden={idx !== active}
-          />
+          >
+            {loaded.has(idx) && (
+              <Image
+                src={src}
+                alt=""
+                fill
+                priority={idx === 0}
+                sizes="100vw"
+                style={{ objectFit: "cover", objectPosition: "center" }}
+              />
+            )}
+          </Box>
         ))}
         <Box sx={sx.dots}>
           {images.map((_, idx) => (

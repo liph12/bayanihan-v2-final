@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { Box, Typography } from "@mui/material";
 import NextLink from "next/link";
+import Image from "next/image";
 import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
@@ -127,19 +128,14 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
           }}
         >
           {image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               className="news-img"
-              loading="lazy"
               src={image}
               alt={a.title || "News"}
+              fill
+              sizes="(max-width:600px) 260px, (max-width:900px) 290px, 320px"
               style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "100%",
                 objectFit: "cover",
-                display: "block",
                 transition: "transform .5s cubic-bezier(0.22, 1, 0.36, 1)",
               }}
             />

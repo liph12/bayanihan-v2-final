@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { serverGet } from "@/lib/serverFetch";
 import Banner from "@/components/home/Banner";
 import EventsSection from "@/components/home/EventsSection";
 import RestaurantsSection from "@/components/home/RestaurantsSection";
 import NewsSection from "@/components/home/NewsSection";
-import TopDestinations from "@/components/home/TopDestinations";
-import AboutSection from "@/components/home/AboutSection";
 import { POPULAR_ORDER } from "@/lib/popularCountries";
 import { normalizeArticle } from "@/lib/newsHelpers";
 import type { BayanihanEvent, Country, NewsArticle, Restaurant } from "@/types";
+
+// Below-the-fold sections are code-split so their JS isn't in the initial
+// bundle (they still render on the server).
+const TopDestinations = dynamic(
+  () => import("@/components/home/TopDestinations")
+);
+const AboutSection = dynamic(() => import("@/components/home/AboutSection"));
 
 // The home page inherits its title/description from the root layout. We
 // override here only to pin a canonical URL and a page-specific OG URL —
