@@ -290,6 +290,7 @@ export default function EventsSection({
             onChange={(e) => setCountry(String(e.target.value))}
             variant="standard"
             disableUnderline
+            inputProps={{ "aria-label": "Filter events by country" }}
             renderValue={(val) => {
               const c = String(val);
               const name =
