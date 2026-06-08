@@ -356,10 +356,11 @@ export default function Footer() {
               sx={{
                 fontSize: 14,
                 fontWeight: 700,
-                color: "#f67f00",
+                // Darker orange for sufficient contrast on the light footer.
+                color: "#c2410c",
                 display: "inline-flex",
                 alignItems: "center",
-                "&:hover": { color: "#c2410c" },
+                "&:hover": { color: "#9a3412" },
               }}
             >
               View all articles
