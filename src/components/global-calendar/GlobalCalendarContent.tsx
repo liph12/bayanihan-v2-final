@@ -9,6 +9,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PendingIcon from "@mui/icons-material/Pending";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { eventUrl } from "@/lib/eventUrl";
 import {
   calendarStyles,
   EmptyCalendar,
@@ -74,9 +75,9 @@ export default function GlobalCalendarContent({
         desc: event.description,
         location: event.location,
         status,
-        eventUrl: event.subDomain?.name
-          ? `https://${event.subDomain.name}.bayanihan.com`
-          : undefined,
+        // Same-origin path (/<slug>) served by the [slug] route — not a
+        // <slug>.bayanihan.com subdomain, which doesn't resolve.
+        eventUrl: eventUrl(event) || undefined,
         resource: event,
       };
     });

@@ -24,6 +24,7 @@ import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { OpenInBrowser } from "@mui/icons-material";
 import type { ReactElement } from "react";
 import type { BayanihanEvent } from "@/types";
+import { eventUrl } from "@/lib/eventUrl";
 
 dayjs.extend(customParseFormat);
 
@@ -210,7 +211,10 @@ export function EventDialog({
   if (!event) return null;
   const statusColor = statusColors[event.status] || statusColors.upcoming;
   const statusInfo = getStatusInfo(event.status);
-  const subdomainName = event.resource?.subDomain?.name;
+  // Events are served from the top-level /<slug> route on the main domain
+  // (same as the homepage + sitemap) — NOT as <slug>.bayanihan.com, which
+  // doesn't resolve and was causing the "Open Event Link" error.
+  const eventLink = event.resource ? eventUrl(event.resource) : "";
   const organizer =
     typeof event.resource?.organizer === "string"
       ? event.resource.organizer
@@ -239,14 +243,14 @@ export function EventDialog({
       >
         <Box>
           <Typography variant="h6">{event.title}</Typography>
-          {subdomainName && (
+          {eventLink && (
             <Box sx={{ display: "flex", gap: 2, alignItems: "end" }}>
               <Button
                 variant="contained"
                 color="primary"
                 startIcon={<OpenInBrowser />}
                 component="a"
-                href={`https://${subdomainName}.bayanihan.com`}
+                href={eventLink}
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{ textTransform: "none", mt: 1 }}
