@@ -1,24 +1,17 @@
 "use client";
-import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import NextLink from "next/link";
-import AxiosInstance from "@/lib/AxiosInstance";
 import { POPULAR_ORDER } from "@/lib/popularCountries";
+import { countryCodes } from "@/lib/countryCodes";
 import type { Country } from "@/types";
 
-interface ApiCountry {
-  code?: string;
-  alpha2?: string;
-  alpha3?: string;
-  name?: string;
-  country?: string;
-  label?: string;
-}
-
-interface CountriesResponse {
-  data?: { countries?: ApiCountry[] };
-  countries?: ApiCountry[];
-}
+// The popular countries are a fixed set with known names, so build the list
+// statically from POPULAR_ORDER + countryCodes — no API fetch needed. The
+// flags render instantly (server-side too) and never disappear when the
+// backend is flaky.
+const POPULAR_COUNTRIES: Country[] = POPULAR_ORDER.map((code) =>
+  countryCodes.find((c) => c.code.toUpperCase() === code)
+).filter((c): c is Country => Boolean(c));
 
 const sx = {
   container: {
@@ -77,39 +70,8 @@ interface PopularCountriesProps {
 export default function PopularCountries({
   initialCountries = [],
 }: PopularCountriesProps) {
-  const [countries, setCountries] = useState<Country[]>(initialCountries);
-
-  useEffect(() => {
-    if (initialCountries.length > 0) return;
-    let mounted = true;
-    (async () => {
-      try {
-        const resp =
-          await AxiosInstance.get<CountriesResponse>("countries");
-        const arr: ApiCountry[] =
-          resp?.data?.data?.countries || resp?.data?.countries || [];
-        if (!mounted) return;
-        const byCode = new Map<string, Country>();
-        arr.forEach((c) => {
-          if (!c) return;
-          const code = String(
-            c.code || c.alpha2 || c.alpha3 || ""
-          ).toUpperCase();
-          const name = c.name || c.country || c.label || code;
-          if (code) byCode.set(code, { code, name });
-        });
-        const list = POPULAR_ORDER.map((code) => byCode.get(code)).filter(
-          (x): x is Country => Boolean(x)
-        );
-        setCountries(list);
-      } catch {
-        setCountries([]);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [initialCountries.length]);
+  const countries =
+    initialCountries.length > 0 ? initialCountries : POPULAR_COUNTRIES;
 
   return (
     <Box sx={sx.container}>
