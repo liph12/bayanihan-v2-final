@@ -28,6 +28,7 @@ import {
   articleUrl,
   getArticlesByCategory,
 } from "@/lib/articles";
+import { EXTERNAL_RESOURCES } from "@/lib/externalResources";
 
 const BG = "#ECEAE3";
 const LOGO_SRC = "/profile/logo.png";
@@ -378,6 +379,57 @@ export default function Footer() {
               </Grid>
             ))}
           </Grid>
+        </Box>
+
+        {/* Featured Reads — curated outbound links to authoritative articles
+            on Filipino food, festivals & culture. */}
+        <Box sx={{ mt: { xs: 3, md: 4 } }}>
+          <Box
+            sx={{
+              borderTop: "1px solid rgba(0,0,0,0.10)",
+              pt: { xs: 3, md: 3.5 },
+              mb: { xs: 2, md: 2.5 },
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 800,
+                fontSize: { xs: 16, md: 18 },
+                color: "#111",
+              }}
+            >
+              Filipino Food, Festivals &amp; Culture — Featured Reads
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              columnCount: { xs: 1, sm: 2, md: 3, lg: 4 },
+              columnGap: { xs: 2, md: 3 },
+            }}
+          >
+            {EXTERNAL_RESOURCES.map((r, i) => (
+              <MLink
+                key={i}
+                component="a"
+                href={r.url}
+                target="_blank"
+                rel="noopener"
+                underline="hover"
+                sx={{
+                  display: "block",
+                  breakInside: "avoid",
+                  fontFamily: "var(--font-outfit)",
+                  fontSize: 14,
+                  lineHeight: 1.4,
+                  color: "#374151",
+                  mb: 1.1,
+                  "&:hover": { color: "#f67f00" },
+                }}
+              >
+                {r.title}
+              </MLink>
+            ))}
+          </Box>
         </Box>
 
         {/* Row 1: CTA buttons + social icons */}
