@@ -44,10 +44,25 @@ async function getEvents(): Promise<BayanihanEvent[]> {
     const data = await serverGet<EventsResponse | BayanihanEvent[]>("events", {
       revalidate: 300,
     });
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.data?.events)) return data.data!.events!;
-    if (Array.isArray(data?.events)) return data.events!;
-    return [];
+    const arr: BayanihanEvent[] = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data?.events)
+      ? data.data!.events!
+      : Array.isArray(data?.events)
+      ? data.events!
+      : [];
+    // Cap + strip to the fields the card renders. The raw events carry heavy
+    // fields (description, gallery, participants, seoTags…) that would
+    // otherwise be serialized into the HTML for every row.
+    return arr.slice(0, 24).map((e) => ({
+      id: e.id,
+      slug: e.slug,
+      title: e.title,
+      image: e.image,
+      eventDate: e.eventDate,
+      date: e.date,
+      subDomain: e.subDomain,
+    }));
   } catch {
     return [];
   }
@@ -59,10 +74,28 @@ async function getRestaurants(): Promise<Restaurant[]> {
       "restaurants",
       { revalidate: 60 }
     );
-    if (Array.isArray(data)) return data;
-    if (Array.isArray(data?.data?.restaurant)) return data.data!.restaurant!;
-    if (Array.isArray(data?.restaurant)) return data.restaurant!;
-    return [];
+    const arr: Restaurant[] = Array.isArray(data)
+      ? data
+      : Array.isArray(data?.data?.restaurant)
+      ? data.data!.restaurant!
+      : Array.isArray(data?.restaurant)
+      ? data.restaurant!
+      : [];
+    // Cap + strip — each raw restaurant carries a ~27KB `menus` field (plus
+    // descriptions, geo, etc.) the card never uses. Keep only what's rendered.
+    return arr.slice(0, 12).map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      photo: r.photo,
+      cover: r.cover,
+      image: r.image,
+      logo: r.logo,
+      city: r.city,
+      country: r.country,
+      category: r.category,
+      subDomain: r.subDomain,
+    }));
   } catch {
     return [];
   }
@@ -117,7 +150,9 @@ async function getNews(): Promise<NewsArticle[]> {
         category: n.category,
       });
     }
-    return out;
+    // Cap the rail so the homepage doesn't render dozens of cards into the HTML
+    // (the full list lives on /news).
+    return out.slice(0, 24);
   } catch {
     return [];
   }
