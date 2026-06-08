@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   // that Google shows under the result. Repeating it naturally is what
   // helps the search engine associate the page with the brand query.
   description:
-    "Bayanihan.com is the global home for Filipino events, festivals, and restaurants. Discover Bayanihan — connecting Filipinos worldwide through community, culture, and cuisine.",
+    "Bayanihan.com — Filipino events, festivals, and restaurants worldwide. Connecting the Filipino community through culture and cuisine.",
   // Application name appears in tab metadata + some social previews.
   applicationName: "Bayanihan.com",
   // `keywords` carries little weight for Google itself but is still read
