@@ -140,10 +140,39 @@ export default function StoryRail({
 
       rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(tick);
+
+    // Only animate while the rail is on (or near) screen — no requestAnimationFrame
+    // churn when it's below the fold, keeping the main thread free during load.
+    const startLoop = () => {
+      if (!rafId) {
+        lastTs = performance.now();
+        rafId = requestAnimationFrame(tick);
+      }
+    };
+    const stopLoop = () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+    };
+
+    let io: IntersectionObserver | null = null;
+    if (typeof IntersectionObserver !== "undefined") {
+      io = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) startLoop();
+          else stopLoop();
+        },
+        { rootMargin: "200px" }
+      );
+      io.observe(el);
+    } else {
+      startLoop();
+    }
 
     return () => {
-      cancelAnimationFrame(rafId);
+      stopLoop();
+      io?.disconnect();
       el.removeEventListener("mouseenter", onEnter);
       el.removeEventListener("mouseleave", onLeave);
       document.removeEventListener("visibilitychange", onVisibility);

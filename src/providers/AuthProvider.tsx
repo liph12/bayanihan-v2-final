@@ -8,10 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { UserData } from "@/types";
-
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
 // Prototype auth: localStorage-backed (matches the existing React app).
 // For production SSR, swap for cookie-based auth so server components can
@@ -137,9 +134,5 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     [userData, authToken, ready, login, patchUser, logout]
   );
 
-  return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-    </GoogleOAuthProvider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

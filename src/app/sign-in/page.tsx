@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import AuthLayout from "@/components/auth/AuthLayout";
 import SignInForm from "@/components/auth/SignInForm";
+import GoogleAuthBoundary from "@/components/auth/GoogleAuthBoundary";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -12,7 +13,9 @@ export const metadata: Metadata = {
 export default function SignInPage() {
   return (
     <AuthLayout>
-      <SignInForm />
+      <GoogleAuthBoundary>
+        <SignInForm />
+      </GoogleAuthBoundary>
     </AuthLayout>
   );
 }
