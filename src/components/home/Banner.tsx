@@ -234,6 +234,7 @@ export default function Banner({
                 alt=""
                 fill
                 priority={idx === 0}
+                quality={55}
                 sizes="100vw"
                 style={{ objectFit: "cover", objectPosition: "center" }}
               />

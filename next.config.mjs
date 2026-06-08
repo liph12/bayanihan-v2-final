@@ -3,6 +3,9 @@ const nextConfig = {
   // Serve modern image formats (smaller than JPEG/PNG) when next/image is used.
   images: {
     formats: ["image/avif", "image/webp"],
+    // Allowed quality values for the `quality` prop (Next 16 requires this).
+    // The hero uses 55 (it sits behind a dark overlay, so it's imperceptible).
+    qualities: [55, 75],
     // Hosts allowed for next/image optimization (flags, banner bucket, API).
     remotePatterns: [
       { protocol: "https", hostname: "flagcdn.com" },
