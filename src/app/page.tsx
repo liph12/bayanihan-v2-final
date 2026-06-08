@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { serverGet } from "@/lib/serverFetch";
 import Banner from "@/components/home/Banner";
 import EventsSection from "@/components/home/EventsSection";
@@ -140,12 +141,19 @@ async function getCountries(): Promise<Country[]> {
   }
 }
 
+// Streamed separately (see <Suspense> below) so the slow, paginated news
+// fetch never blocks the rest of the homepage from rendering.
+async function NewsLoader() {
+  const news = await getNews();
+  return <NewsSection initialArticles={news} />;
+}
+
 export default async function HomePage() {
-  const [events, restaurants, countries, news] = await Promise.all([
+  // Only the fast single-call fetches gate the initial render; news streams in.
+  const [events, restaurants, countries] = await Promise.all([
     getEvents(),
     getRestaurants(),
     getCountries(),
-    getNews(),
   ]);
 
   return (
@@ -184,7 +192,9 @@ export default async function HomePage() {
           initialCountry={DEFAULT_EVENTS_COUNTRY}
         />
         <RestaurantsSection initialRestaurants={restaurants} />
-        <NewsSection initialArticles={news} />
+        <Suspense fallback={<div style={{ minHeight: 360 }} />}>
+          <NewsLoader />
+        </Suspense>
         <TopDestinations />
         <AboutSection />
       </div>
