@@ -37,8 +37,10 @@ const SITE_URL = (
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default:
-      "Bayanihan — Discover Filipino Events & Restaurants Worldwide | Bayanihan.com",
+    // Kept under ~580px wide (the old one was 730px). Brand is at the front,
+    // so the redundant "| Bayanihan.com" suffix and the filler "Discover"
+    // are dropped while the key keywords stay.
+    default: "Bayanihan — Filipino Events & Restaurants Worldwide",
     template: "%s | Bayanihan.com",
   },
   // Description leads with "Bayanihan" so the keyword anchors the snippet
