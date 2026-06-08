@@ -257,37 +257,43 @@ export default function NewsDetailContent({
     </>
   );
 
-  return (
-    <Box sx={{ pb: 8 }}>
-      {/* ===== Fixed social share rail — left side, large screens ===== */}
-      <Box
+  // Sticky left share rail (large screens). Lives inside the article column
+  // (below), so it sticks while scrolling but stops at the bottom of the
+  // article body — it never floats over the footer.
+  const shareRail = (
+    <Box
+      sx={{
+        display: { xs: "none", lg: "flex" },
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 1,
+        position: "sticky",
+        // Match the right sidebar so it tucks neatly under the breadcrumb,
+        // whether the header is shown or hidden.
+        top: headerHidden ? 64 : 130,
+        alignSelf: "flex-start",
+        flexShrink: 0,
+        pr: 2, // space between the icons and the article text
+      }}
+    >
+      <Typography
         sx={{
-          position: "fixed",
-          left: { lg: 16, xl: 28 },
-          top: "50%",
-          transform: "translateY(-50%)",
-          zIndex: 1000,
-          display: { xs: "none", lg: "flex" },
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 1,
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: 1,
+          textTransform: "uppercase",
+          color: "#94a3b8",
+          mb: 0.5,
         }}
       >
-        <Typography
-          sx={{
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            color: "#94a3b8",
-            mb: 0.5,
-          }}
-        >
-          Share
-        </Typography>
-        {shareIcons}
-      </Box>
+        Share
+      </Typography>
+      {shareIcons}
+    </Box>
+  );
 
+  return (
+    <Box sx={{ pb: 8 }}>
       {/* ===== Reading progress bar (fixed top) ===== */}
       <Box
         sx={{
@@ -451,6 +457,9 @@ export default function NewsDetailContent({
         <Grid container spacing={4}>
           {/* ============== Main article column ============== */}
           <Grid size={{ xs: 12, md: 8 }}>
+            <Box sx={{ display: "flex" }}>
+              {shareRail}
+              <Box sx={{ flex: 1, minWidth: 0 }}>
             {/* Meta row */}
             <Box
               sx={{
@@ -808,6 +817,8 @@ export default function NewsDetailContent({
                 </Grid>
               </Grid>
             )}
+              </Box>
+            </Box>
           </Grid>
 
           {/* ============== Sticky Sidebar ============== */}
