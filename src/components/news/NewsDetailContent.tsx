@@ -9,6 +9,10 @@ import {
   Avatar,
   Stack,
   Breadcrumbs,
+  IconButton,
+  Tooltip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Link from "next/link";
@@ -24,6 +28,9 @@ import HomeIcon from "@mui/icons-material/Home";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import XIcon from "@mui/icons-material/X";
+import InstagramIcon from "@mui/icons-material/Instagram";
 import merchAds from "@/assets/ads/merch_ads.gif";
 import merchAds2 from "@/assets/ads/merch_ads2.gif";
 import { parseSummary, parseTags, slugifyTitle } from "@/lib/newsHelpers";
@@ -51,6 +58,14 @@ function formatShortDate(dateStr?: string | null): string {
     year: "numeric",
   }).format(d);
 }
+
+const shareBtnStyle = (color: string) => ({
+  color: "#fff",
+  bgcolor: color,
+  width: 40,
+  height: 40,
+  "&:hover": { bgcolor: color, filter: "brightness(0.9)" },
+});
 
 interface NewsDetailContentProps {
   article: NewsArticle;
@@ -89,6 +104,58 @@ export default function NewsDetailContent({
 }: NewsDetailContentProps) {
   const router = useRouter();
   const [progress, setProgress] = useState(0);
+  const [shareSnack, setShareSnack] = useState<{ open: boolean; msg: string }>({
+    open: false,
+    msg: "",
+  });
+
+  const currentUrl = () =>
+    typeof window !== "undefined" ? window.location.href : "";
+
+  const openSharePopup = (url: string) => {
+    if (typeof window === "undefined") return;
+    window.open(url, "_blank", "noopener,noreferrer,width=600,height=600");
+  };
+
+  const shareFacebook = () => {
+    openSharePopup(
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        currentUrl()
+      )}`
+    );
+  };
+
+  const shareX = () => {
+    openSharePopup(
+      `https://twitter.com/intent/tweet?url=${encodeURIComponent(
+        currentUrl()
+      )}&text=${encodeURIComponent(article.title || "")}`
+    );
+  };
+
+  // Instagram has no web link-share URL, so use the native share sheet when
+  // available (lets the user pick Instagram); otherwise copy the link so they
+  // can paste it into a post, story, or DM.
+  const shareInstagram = async () => {
+    const url = currentUrl();
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: article.title || "Bayanihan News", url });
+        return;
+      } catch {
+        /* cancelled or unsupported — fall through to copy */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      setShareSnack({
+        open: true,
+        msg: "Link copied — share it on Instagram.",
+      });
+    } catch {
+      setShareSnack({ open: true, msg: "Couldn't copy the link automatically." });
+    }
+  };
 
   // Shared with the header (HeaderVisibilityProvider). When the header is
   // hidden (scrolled down) the breadcrumb pins to the very top and stays
@@ -504,6 +571,68 @@ export default function NewsDetailContent({
                   Explore more like this
                 </Button>
               </Stack>
+
+              {/* Share to social media */}
+              <Box
+                sx={{
+                  mt: 3,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Typography
+                  sx={{ fontWeight: 600, fontSize: 14, color: "#64748b" }}
+                >
+                  Share this story
+                </Typography>
+                <Stack direction="row" spacing={1}>
+                  <Tooltip title="Share on Facebook">
+                    <IconButton
+                      onClick={shareFacebook}
+                      aria-label="Share on Facebook"
+                      sx={shareBtnStyle("#1877F2")}
+                    >
+                      <FacebookIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Share on X">
+                    <IconButton
+                      onClick={shareX}
+                      aria-label="Share on X"
+                      sx={shareBtnStyle("#000000")}
+                    >
+                      <XIcon />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Share on Instagram">
+                    <IconButton
+                      onClick={shareInstagram}
+                      aria-label="Share on Instagram"
+                      sx={shareBtnStyle("#E4405F")}
+                    >
+                      <InstagramIcon />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              </Box>
+
+              <Snackbar
+                open={shareSnack.open}
+                autoHideDuration={3000}
+                onClose={() => setShareSnack((s) => ({ ...s, open: false }))}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+              >
+                <Alert
+                  severity="success"
+                  variant="filled"
+                  onClose={() => setShareSnack((s) => ({ ...s, open: false }))}
+                  sx={{ width: "100%" }}
+                >
+                  {shareSnack.msg}
+                </Alert>
+              </Snackbar>
             </Box>
 
             {/* About the author */}
