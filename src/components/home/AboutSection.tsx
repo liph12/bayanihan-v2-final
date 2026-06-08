@@ -6,7 +6,7 @@ import { useLocale } from "@/providers/LocaleProvider";
 const aboutImg =
   "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/filipinohomes-new/uploader/21eb6585-bee0-4cb3-8f50-a6976034e633.webp";
 const timelineBg =
-  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/timeline/background.png";
+  "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/filipinohomes-new/uploader/38054ab2-3a4c-47ba-93b7-34eb65d06ca5.webp";
 
 export default function AboutSection() {
   const { t } = useLocale();
