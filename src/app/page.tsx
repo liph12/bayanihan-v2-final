@@ -41,16 +41,15 @@ interface RestaurantsResponse {
   restaurant?: Restaurant[];
 }
 
-// The events section starts on this country; the picker fetches others
-// client-side. Keep it in POPULAR_ORDER so it appears in the dropdown.
-const DEFAULT_EVENTS_COUNTRY = "SG";
+// The events section defaults to "ALL" (every event); the picker can narrow
+// to a country client-side.
+const DEFAULT_EVENTS_COUNTRY = "ALL";
 
 async function getEvents(): Promise<BayanihanEvent[]> {
   try {
-    const data = await serverGet<EventsResponse | BayanihanEvent[]>(
-      `events-list/${DEFAULT_EVENTS_COUNTRY}`,
-      { revalidate: 300 }
-    );
+    const data = await serverGet<EventsResponse | BayanihanEvent[]>("events", {
+      revalidate: 300,
+    });
     if (Array.isArray(data)) return data;
     if (Array.isArray(data?.data?.events)) return data.data!.events!;
     if (Array.isArray(data?.events)) return data.events!;

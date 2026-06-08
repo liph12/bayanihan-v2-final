@@ -6,6 +6,7 @@ import NextLink from "next/link";
 import EventRoundedIcon from "@mui/icons-material/EventRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
+import PublicIcon from "@mui/icons-material/Public";
 import AxiosInstance from "@/lib/AxiosInstance";
 import { eventUrl } from "@/lib/eventUrl";
 import { countryCodes } from "@/lib/countryCodes";
@@ -17,17 +18,21 @@ const FONT_BODY = "var(--font-outfit), 'Outfit', sans-serif";
 const ACCENT_GRADIENT =
   "linear-gradient(135deg, #c2410c 0%, #F77F00 50%, #FBA833 100%)";
 
-// Countries offered in the picker — the popular set, with names/flags.
-const COUNTRY_OPTIONS = POPULAR_ORDER.map((code) =>
-  countryCodes.find((c) => c.code.toUpperCase() === code)
-).filter((c): c is { code: string; name: string } => Boolean(c));
+// "ALL" (default) shows every event; the rest narrow to one country.
+const ALL = "ALL";
+const COUNTRY_OPTIONS: { code: string; name: string }[] = [
+  { code: ALL, name: "All Countries" },
+  ...POPULAR_ORDER.map((code) =>
+    countryCodes.find((c) => c.code.toUpperCase() === code)
+  ).filter((c): c is { code: string; name: string } => Boolean(c)),
+];
 
 const MAX_CARDS = 8;
 
 interface EventsSectionProps {
   /** Events for `initialCountry`, fetched on the server for the first paint. */
   initialEvents?: BayanihanEvent[];
-  /** ISO code the picker starts on (must be in POPULAR_ORDER). */
+  /** ISO code the picker starts on, or "ALL" for every country. */
   initialCountry?: string;
 }
 
@@ -83,7 +88,8 @@ function EventCard({
   const href = eventUrl(ev) || "#";
   const isExternal = href.startsWith("http");
   const date = formatDate(ev?.eventDate || ev?.date);
-  const location = (ev as { location?: string })?.location || fallbackCountry;
+  const meta = ev as { location?: string; country?: string };
+  const location = meta?.location || meta?.country || fallbackCountry || "";
 
   const card = (
     <Box
@@ -167,31 +173,33 @@ function EventCard({
           {date}
         </Box>
 
-        <Box
-          sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.5,
-            color: "#64748b",
-            fontFamily: FONT_BODY,
-            fontSize: 12,
-            fontWeight: 600,
-            mt: "auto",
-          }}
-        >
-          <LocationOnRoundedIcon sx={{ fontSize: 13 }} />
+        {location && (
           <Box
-            component="span"
             sx={{
-              display: "-webkit-box",
-              WebkitLineClamp: 1,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.5,
+              color: "#64748b",
+              fontFamily: FONT_BODY,
+              fontSize: 12,
+              fontWeight: 600,
+              mt: "auto",
             }}
           >
-            {location}
+            <LocationOnRoundedIcon sx={{ fontSize: 13 }} />
+            <Box
+              component="span"
+              sx={{
+                display: "-webkit-box",
+                WebkitLineClamp: 1,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}
+            >
+              {location}
+            </Box>
           </Box>
-        </Box>
+        )}
       </Box>
     </Box>
   );
@@ -216,7 +224,7 @@ function EventCard({
 
 export default function EventsSection({
   initialEvents = [],
-  initialCountry = "SG",
+  initialCountry = ALL,
 }: EventsSectionProps) {
   const [country, setCountry] = useState(initialCountry.toUpperCase());
   const [events, setEvents] = useState<BayanihanEvent[]>(initialEvents);
@@ -224,8 +232,8 @@ export default function EventsSection({
   const firstRun = useRef(true);
 
   useEffect(() => {
-    // First mount: reuse the server-fetched events for the initial country.
-    // Any country change: fetch that country's events client-side.
+    // First mount: reuse the server-fetched events for the initial selection.
+    // Any change: "ALL" fetches every event; a country fetches its own list.
     if (firstRun.current) {
       firstRun.current = false;
       if (initialEvents.length > 0) return;
@@ -234,7 +242,8 @@ export default function EventsSection({
     setLoading(true);
     (async () => {
       try {
-        const resp = await AxiosInstance.get(`events-list/${country}`);
+        const path = country === ALL ? "events" : `events-list/${country}`;
+        const resp = await AxiosInstance.get(path);
         if (!cancelled) setEvents(extractEvents(resp?.data));
       } catch {
         if (!cancelled) setEvents([]);
@@ -248,11 +257,15 @@ export default function EventsSection({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country]);
 
-  const countryName =
+  const isAll = country === ALL;
+  const selectedName =
     COUNTRY_OPTIONS.find((c) => c.code.toUpperCase() === country)?.name ||
     country;
 
   const list = useMemo(() => pickUpcoming(events), [events]);
+
+  const seeAllHref = isAll ? "/browse-events" : `/country/${country.toLowerCase()}`;
+  const seeAllLabel = isAll ? "Browse all events" : `See all events in ${selectedName}`;
 
   return (
     <Box sx={{ position: "relative", px: { xs: 2, md: 4, lg: 5 }, py: { xs: 2.5, md: 3 } }}>
@@ -281,14 +294,18 @@ export default function EventsSection({
                 COUNTRY_OPTIONS.find((o) => o.code.toUpperCase() === c)?.name || c;
               return (
                 <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={flagUrl(c)}
-                    alt=""
-                    width={28}
-                    height={20}
-                    style={{ borderRadius: 3, objectFit: "cover", display: "block" }}
-                  />
+                  {c === ALL ? (
+                    <PublicIcon sx={{ fontSize: 26, color: "#F77F00" }} />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={flagUrl(c)}
+                      alt=""
+                      width={28}
+                      height={20}
+                      style={{ borderRadius: 3, objectFit: "cover", display: "block" }}
+                    />
+                  )}
                   <Box
                     component="span"
                     sx={{
@@ -323,14 +340,18 @@ export default function EventsSection({
                 value={c.code.toUpperCase()}
                 sx={{ fontFamily: FONT_BODY, gap: 1.25 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={flagUrl(c.code)}
-                  alt=""
-                  width={22}
-                  height={16}
-                  style={{ borderRadius: 2, objectFit: "cover", display: "block" }}
-                />
+                {c.code === ALL ? (
+                  <PublicIcon sx={{ fontSize: 20, color: "#64748b" }} />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={flagUrl(c.code)}
+                    alt=""
+                    width={22}
+                    height={16}
+                    style={{ borderRadius: 2, objectFit: "cover", display: "block" }}
+                  />
+                )}
                 {c.name}
               </MenuItem>
             ))}
@@ -346,7 +367,9 @@ export default function EventsSection({
             mb: 3,
           }}
         >
-          Filipino events, festivals, and gatherings in {countryName}.
+          {isAll
+            ? "Filipino events, festivals, and gatherings worldwide."
+            : `Filipino events, festivals, and gatherings in ${selectedName}.`}
         </Typography>
 
         {/* ── Grid ── */}
@@ -374,7 +397,9 @@ export default function EventsSection({
             }}
           >
             <Typography sx={{ fontFamily: FONT_HEAD, fontWeight: 800, color: "#0f172a", mb: 1 }}>
-              No upcoming events in {countryName} yet
+              {isAll
+                ? "No upcoming events right now"
+                : `No upcoming events in ${selectedName} yet`}
             </Typography>
             <Typography sx={{ fontFamily: FONT_BODY, fontSize: 14, color: "#64748b", mb: 3 }}>
               Try another country, or browse everything happening worldwide.
@@ -405,15 +430,12 @@ export default function EventsSection({
             <Grid container spacing={{ xs: 2, md: 3 }}>
               {list.map((ev, i) => (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={ev.id || `ev-${i}`}>
-                  <EventCard ev={ev} fallbackCountry={countryName} />
+                  <EventCard ev={ev} fallbackCountry={isAll ? "" : selectedName} />
                 </Grid>
               ))}
             </Grid>
             <Box sx={{ mt: 3.5, display: "flex", justifyContent: "center" }}>
-              <NextLink
-                href={`/country/${country.toLowerCase()}`}
-                style={{ textDecoration: "none" }}
-              >
+              <NextLink href={seeAllHref} style={{ textDecoration: "none" }}>
                 <Box
                   sx={{
                     display: "inline-flex",
@@ -431,7 +453,7 @@ export default function EventsSection({
                     "&:hover": { background: "#fff8ec" },
                   }}
                 >
-                  See all events in {countryName}
+                  {seeAllLabel}
                   <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
                 </Box>
               </NextLink>
