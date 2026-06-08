@@ -95,7 +95,10 @@ async function getNews(): Promise<NewsArticle[]> {
       );
       rest.forEach((arr) => raw.push(...arr));
     }
-    // De-duplicate (the API repeats articles across pages) + normalize.
+    // De-duplicate (the API repeats articles across pages) + normalize, then
+    // keep ONLY the fields the homepage card renders. The full article bodies
+    // (summary/content/etc.) would otherwise be serialized into the HTML for
+    // every article, bloating the document by megabytes.
     const seen = new Set<string>();
     const out: NewsArticle[] = [];
     for (const a of raw) {
@@ -104,7 +107,15 @@ async function getNews(): Promise<NewsArticle[]> {
       const key = String(n.id ?? n.slug ?? n.title ?? "");
       if (key && seen.has(key)) continue;
       if (key) seen.add(key);
-      out.push(n);
+      out.push({
+        id: n.id,
+        slug: n.slug,
+        title: n.title,
+        image_url: n.image_url,
+        date: n.date,
+        views_count: n.views_count,
+        category: n.category,
+      });
     }
     return out;
   } catch {
