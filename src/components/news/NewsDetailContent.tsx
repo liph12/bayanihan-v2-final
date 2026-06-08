@@ -224,8 +224,70 @@ export default function NewsDetailContent({
   // (NewsArticle JSON-LD lives in app/news/[slug]/page.tsx — server-rendered
   // so it ships in the initial HTML for crawlers.)
 
+  // Shared between the fixed left rail (desktop) and the inline row (mobile).
+  const shareIcons = (
+    <>
+      <Tooltip title="Share on Facebook" placement="right">
+        <IconButton
+          onClick={shareFacebook}
+          aria-label="Share on Facebook"
+          sx={shareBtnStyle("#1877F2")}
+        >
+          <FacebookIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Share on X" placement="right">
+        <IconButton
+          onClick={shareX}
+          aria-label="Share on X"
+          sx={shareBtnStyle("#000000")}
+        >
+          <XIcon />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Share on Instagram" placement="right">
+        <IconButton
+          onClick={shareInstagram}
+          aria-label="Share on Instagram"
+          sx={shareBtnStyle("#E4405F")}
+        >
+          <InstagramIcon />
+        </IconButton>
+      </Tooltip>
+    </>
+  );
+
   return (
     <Box sx={{ pb: 8 }}>
+      {/* ===== Fixed social share rail — left side, large screens ===== */}
+      <Box
+        sx={{
+          position: "fixed",
+          left: { lg: 16, xl: 28 },
+          top: "50%",
+          transform: "translateY(-50%)",
+          zIndex: 1000,
+          display: { xs: "none", lg: "flex" },
+          flexDirection: "column",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <Typography
+          sx={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            color: "#94a3b8",
+            mb: 0.5,
+          }}
+        >
+          Share
+        </Typography>
+        {shareIcons}
+      </Box>
+
       {/* ===== Reading progress bar (fixed top) ===== */}
       <Box
         sx={{
@@ -572,11 +634,12 @@ export default function NewsDetailContent({
                 </Button>
               </Stack>
 
-              {/* Share to social media */}
+              {/* Share to social media (inline) — shown on small/medium
+                  screens where the fixed left rail is hidden. */}
               <Box
                 sx={{
                   mt: 3,
-                  display: "flex",
+                  display: { xs: "flex", lg: "none" },
                   alignItems: "center",
                   gap: 1.5,
                   flexWrap: "wrap",
@@ -588,33 +651,7 @@ export default function NewsDetailContent({
                   Share this story
                 </Typography>
                 <Stack direction="row" spacing={1}>
-                  <Tooltip title="Share on Facebook">
-                    <IconButton
-                      onClick={shareFacebook}
-                      aria-label="Share on Facebook"
-                      sx={shareBtnStyle("#1877F2")}
-                    >
-                      <FacebookIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Share on X">
-                    <IconButton
-                      onClick={shareX}
-                      aria-label="Share on X"
-                      sx={shareBtnStyle("#000000")}
-                    >
-                      <XIcon />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Share on Instagram">
-                    <IconButton
-                      onClick={shareInstagram}
-                      aria-label="Share on Instagram"
-                      sx={shareBtnStyle("#E4405F")}
-                    >
-                      <InstagramIcon />
-                    </IconButton>
-                  </Tooltip>
+                  {shareIcons}
                 </Stack>
               </Box>
 
