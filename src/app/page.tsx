@@ -6,9 +6,8 @@ import Banner from "@/components/home/Banner";
 import EventsSection from "@/components/home/EventsSection";
 import RestaurantsSection from "@/components/home/RestaurantsSection";
 import NewsSection from "@/components/home/NewsSection";
-import { POPULAR_ORDER } from "@/lib/popularCountries";
 import { normalizeArticle } from "@/lib/newsHelpers";
-import type { BayanihanEvent, Country, NewsArticle, Restaurant } from "@/types";
+import type { BayanihanEvent, NewsArticle, Restaurant } from "@/types";
 
 // Below-the-fold sections are code-split so their JS isn't in the initial
 // bundle (they still render on the server).
@@ -25,19 +24,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   openGraph: { url: "/" },
 };
-
-interface ApiCountry {
-  code?: string;
-  alpha2?: string;
-  alpha3?: string;
-  name?: string;
-  country?: string;
-  label?: string;
-}
-interface CountriesResponse {
-  data?: { countries?: ApiCountry[] };
-  countries?: ApiCountry[];
-}
 
 interface EventsResponse {
   data?: { events?: BayanihanEvent[] };
@@ -125,43 +111,30 @@ async function getNews(): Promise<NewsArticle[]> {
   }
 }
 
-async function getCountries(): Promise<Country[]> {
-  try {
-    const data = await serverGet<CountriesResponse>("countries", {
-      revalidate: 60,
-    });
-    const arr: ApiCountry[] =
-      data?.data?.countries || data?.countries || [];
-    const byCode = new Map<string, Country>();
-    arr.forEach((c) => {
-      if (!c) return;
-      const code = String(c.code || c.alpha2 || c.alpha3 || "").toUpperCase();
-      const name = c.name || c.country || c.label || code;
-      if (code) byCode.set(code, { code, name });
-    });
-    return POPULAR_ORDER.map((code) => byCode.get(code)).filter(
-      (x): x is Country => Boolean(x)
-    );
-  } catch {
-    return [];
-  }
+// Each data section streams in its own <Suspense> boundary, so NO backend
+// fetch blocks the initial HTML — the shell + Banner (the LCP) flush
+// immediately and the sections fill in as their data resolves.
+async function EventsLoader() {
+  const events = await getEvents();
+  return (
+    <EventsSection
+      initialEvents={events}
+      initialCountry={DEFAULT_EVENTS_COUNTRY}
+    />
+  );
 }
 
-// Streamed separately (see <Suspense> below) so the slow, paginated news
-// fetch never blocks the rest of the homepage from rendering.
+async function RestaurantsLoader() {
+  const restaurants = await getRestaurants();
+  return <RestaurantsSection initialRestaurants={restaurants} />;
+}
+
 async function NewsLoader() {
   const news = await getNews();
   return <NewsSection initialArticles={news} />;
 }
 
-export default async function HomePage() {
-  // Only the fast single-call fetches gate the initial render; news streams in.
-  const [events, restaurants, countries] = await Promise.all([
-    getEvents(),
-    getRestaurants(),
-    getCountries(),
-  ]);
-
+export default function HomePage() {
   return (
     <>
       {/*
@@ -192,12 +165,15 @@ export default async function HomePage() {
       {/* One unified page background — the individual sections are
           transparent so the whole homepage reads as a single surface. */}
       <div style={{ background: "#ffffff", flexGrow: 1 }}>
-        <Banner initialCountries={countries} />
-        <EventsSection
-          initialEvents={events}
-          initialCountry={DEFAULT_EVENTS_COUNTRY}
-        />
-        <RestaurantsSection initialRestaurants={restaurants} />
+        {/* Banner needs no server data — it renders immediately so the LCP
+            hero paints fast. Popular-country chips load client-side. */}
+        <Banner initialCountries={[]} />
+        <Suspense fallback={<div style={{ minHeight: 700 }} />}>
+          <EventsLoader />
+        </Suspense>
+        <Suspense fallback={<div style={{ minHeight: 700 }} />}>
+          <RestaurantsLoader />
+        </Suspense>
         <Suspense fallback={<div style={{ minHeight: 360 }} />}>
           <NewsLoader />
         </Suspense>
