@@ -86,7 +86,12 @@ export default function TopDestinations() {
               display: "flex",
               gap: `${GAP}px`,
               transition: "transform 0.5s ease",
-              transform: `translateX(calc(-${clampedIndex} * (100% / ${VISIBLE_CARDS} + ${GAP}px)))`,
+              // Step by exactly one card + gap so cards always align to the
+              // edges (no partially-cut cards). Card width is
+              // (100% - (V-1)*GAP)/V, so one step = that + GAP.
+              transform: `translateX(calc(-${clampedIndex} * ((100% - ${
+                (VISIBLE_CARDS - 1) * GAP
+              }px) / ${VISIBLE_CARDS} + ${GAP}px)))`,
             }}
           >
             {DESTINATIONS.map((d) => (
