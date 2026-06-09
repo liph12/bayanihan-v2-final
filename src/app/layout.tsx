@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import dynamic from "next/dynamic";
 import { Urbanist, Outfit } from "next/font/google";
 import ThemeRegistry from "@/theme/ThemeRegistry";
 import LocaleProvider from "@/providers/LocaleProvider";
 import AuthProvider from "@/providers/AuthProvider";
 import AppChrome from "@/components/layout/AppChrome";
-import GlobalLoader from "@/components/layout/GlobalLoader";
 import "./globals.css";
+
+// The navigation loader isn't part of the initial paint, so code-split it out
+// of the main layout bundle (still SSR'd as a hidden overlay).
+const GlobalLoader = dynamic(() => import("@/components/layout/GlobalLoader"));
 
 const urbanist = Urbanist({
   subsets: ["latin"],

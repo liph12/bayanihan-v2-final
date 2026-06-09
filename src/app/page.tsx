@@ -4,8 +4,6 @@ import dynamic from "next/dynamic";
 import { serverGet } from "@/lib/serverFetch";
 import Banner from "@/components/home/Banner";
 import EventsSection from "@/components/home/EventsSection";
-import RestaurantsSection from "@/components/home/RestaurantsSection";
-import NewsSection from "@/components/home/NewsSection";
 import HomeContent from "@/components/home/HomeContent";
 import { normalizeArticle } from "@/lib/newsHelpers";
 import type { BayanihanEvent, NewsArticle, Restaurant } from "@/types";
@@ -16,6 +14,10 @@ const TopDestinations = dynamic(
   () => import("@/components/home/TopDestinations")
 );
 const AboutSection = dynamic(() => import("@/components/home/AboutSection"));
+const RestaurantsSection = dynamic(
+  () => import("@/components/home/RestaurantsSection")
+);
+const NewsSection = dynamic(() => import("@/components/home/NewsSection"));
 
 // The home page inherits its title/description from the root layout. We
 // override here only to pin a canonical URL and a page-specific OG URL —
