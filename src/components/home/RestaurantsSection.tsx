@@ -79,7 +79,7 @@ function RestaurantCard({ r }: { r: Restaurant }) {
             src={image}
             alt={r.name || "Restaurant"}
             fill
-            quality={55}
+            quality={40}
             sizes="(max-width:600px) 100vw, (max-width:900px) 50vw, (max-width:1200px) 25vw, (max-width:1700px) 20vw, 340px"
             style={{
               objectFit: "cover",

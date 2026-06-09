@@ -7,8 +7,15 @@ const nextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     // Allowed quality values for the `quality` prop (Next 16 requires this).
-    // The hero uses 55 (it sits behind a dark overlay, so it's imperceptible).
-    qualities: [55, 75],
+    // The hero uses 55 (it sits behind a dark overlay, so it's imperceptible);
+    // event/restaurant card thumbnails use 40 (small, so heavy compression is
+    // unnoticeable but meaningfully cuts bytes).
+    qualities: [40, 55, 75],
+    // Add a 512 breakpoint so a ~460-500px-wide card stops over-fetching the
+    // next default size up (640). The default device sizes start at 640, which
+    // is why Lighthouse flagged "image larger than displayed dimensions" on the
+    // cards. This is additive — larger images (hero, etc.) still pick big sizes.
+    deviceSizes: [512, 640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     // Hosts allowed for next/image optimization (flags, banner bucket, API).
     remotePatterns: [
       { protocol: "https", hostname: "flagcdn.com" },
