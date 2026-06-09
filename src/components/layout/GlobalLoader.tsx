@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import Image from "next/image";
 import { Box } from "@mui/material";
 
 // Full-screen branded loader: a centered logo with a gradient sheen sweeping
@@ -129,10 +130,12 @@ export default function GlobalLoader() {
           },
         }}
       >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src="/profile/logo.webp"
           alt="Loading"
+          width={240}
+          height={55}
+          priority
           style={{
             width: "100%",
             height: "auto",

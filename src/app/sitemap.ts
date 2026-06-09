@@ -17,6 +17,12 @@ const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://bayanihan.com"
 ).replace(/\/$/, "");
 
+// Regenerate the sitemap route at most every 2 minutes. This is the
+// route-level ISR window; the inner content fetches use the same 120s window
+// (see serverGet calls below), so a newly published event/news article shows
+// up in /sitemap.xml within ~2 minutes of going live.
+export const revalidate = 120;
+
 const STATIC_PATHS: Array<{
   path: string;
   priority: number;
@@ -51,7 +57,7 @@ interface NewsResponse {
 async function fetchEvents(): Promise<BayanihanEvent[]> {
   try {
     const root = await serverGet<EventsResponse | BayanihanEvent[]>("events", {
-      revalidate: 600,
+      revalidate: 120,
     });
     if (Array.isArray(root)) return root;
     if (Array.isArray(root?.data?.events)) return root.data!.events!;
@@ -65,7 +71,7 @@ async function fetchEvents(): Promise<BayanihanEvent[]> {
 async function fetchRestaurants(): Promise<Restaurant[]> {
   try {
     const root = await serverGet<RestaurantsResponse>("restaurants", {
-      revalidate: 600,
+      revalidate: 120,
     });
     const arr =
       root?.data?.restaurants ??
@@ -88,7 +94,7 @@ const NEWS_PAGE_RETRIES = 6;
 async function fetchNewsPage(page: number): Promise<NewsArticle[]> {
   try {
     const r = await serverGet<NewsResponse>(`news-articles-v2?page=${page}`, {
-      revalidate: 600,
+      revalidate: 120,
       retries: NEWS_PAGE_RETRIES,
     });
     return Array.isArray(r?.data) ? r.data : [];
@@ -100,7 +106,7 @@ async function fetchNewsPage(page: number): Promise<NewsArticle[]> {
 async function fetchNews(): Promise<NewsArticle[]> {
   try {
     const first = await serverGet<NewsResponse>("news-articles-v2?page=1", {
-      revalidate: 600,
+      revalidate: 120,
       retries: NEWS_PAGE_RETRIES,
     });
     const lastPage =
