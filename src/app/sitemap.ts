@@ -8,6 +8,7 @@ import { serverGet } from "@/lib/serverFetch";
 import { POPULAR_ORDER } from "@/lib/popularCountries";
 import { countryCodes } from "@/lib/countryCodes";
 import { ARTICLES, articleUrl } from "@/lib/articles";
+import { DESTINATIONS, destinationUrl } from "@/lib/destinations";
 import type { BayanihanEvent, NewsArticle, Restaurant } from "@/types";
 
 // metadataBase is set in app/layout.tsx — Next applies it automatically to
@@ -234,6 +235,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   for (const article of ARTICLES) {
     entries.push({
       url: `${SITE_URL}${articleUrl(article.slug)}`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    });
+  }
+
+  // Top destination guides under /destinations/<slug> (static content).
+  for (const d of DESTINATIONS) {
+    entries.push({
+      url: `${SITE_URL}${destinationUrl(d.slug)}`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.6,

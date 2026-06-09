@@ -1,18 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardMedia, Typography, Box, useTheme, useMediaQuery } from "@mui/material";
+import NextLink from "next/link";
 import { useLocale } from "@/providers/LocaleProvider";
-
-const DESTINATIONS = [
-  { title: "Boracay Island", subtitle: "Aklan", img: "/destinations/Boracay.png" },
-  { title: "El Nido", subtitle: "Palawan", img: "/destinations/elnido.jpg" },
-  { title: "Chocolate Hills", subtitle: "Bohol", img: "/destinations/chocolatehills.jpg" },
-  { title: "Kawasan Falls", subtitle: "Cebu", img: "/destinations/kawasan.webp" },
-  { title: "Siargao Island", subtitle: "Surigao del Norte", img: "/destinations/siargao.jpg" },
-  { title: "Mayon Volcano", subtitle: "Albay", img: "/destinations/mayon.jpg" },
-  { title: "Vigan City", subtitle: "Ilocos Sur", img: "/destinations/vigan.jpeg" },
-  { title: "Banaue Rice Terraces", subtitle: "Ifugao", img: "/destinations/banaue.webp" },
-];
+import { DESTINATIONS, destinationUrl } from "@/lib/destinations";
 
 export default function TopDestinations() {
   const { t } = useLocale();
@@ -33,7 +24,7 @@ export default function TopDestinations() {
   }, [maxIndex]);
 
   return (
-    <Box sx={{ px: 2, py: 3, width: "98%", margin: "0 auto" }}>
+    <Box id="top-destinations" sx={{ px: 2, py: 3, width: "98%", margin: "0 auto" }}>
       <Typography
         component="h2"
         sx={{
@@ -55,68 +46,88 @@ export default function TopDestinations() {
             transform: `translateX(calc(-${index} * (100% / ${VISIBLE_CARDS} + ${GAP}px)))`,
           }}
         >
-          {DESTINATIONS.map((d, i) => (
-            <Card
-              key={i}
+          {DESTINATIONS.map((d) => (
+            <Box
+              component={NextLink}
+              key={d.slug}
+              href={destinationUrl(d.slug)}
               sx={{
                 width: `calc((100% - ${GAP * (VISIBLE_CARDS - 1)}px) / ${VISIBLE_CARDS})`,
-                height: 180,
-                borderRadius: "35px 35px 0 0",
-                overflow: "hidden",
-                position: "relative",
                 flexShrink: 0,
-                borderBottom: "9px solid #166EF0",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                textDecoration: "none",
               }}
             >
-              <CardMedia
-                component="img"
-                image={d.img}
-                alt={d.title}
-                sx={{ height: "100%", objectFit: "cover" }}
-              />
-              <Box
+              <Card
                 sx={{
-                  position: "absolute",
-                  inset: 0,
-                  background:
-                    "linear-gradient(180deg, rgba(0,0,0,0) 20%, rgba(0,0,0,0.85) 100%)",
-                  zIndex: 1,
-                }}
-              />
-              <CardContent
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  color: "#fff",
-                  p: 1.5,
-                  zIndex: 3,
+                  width: "100%",
+                  height: 180,
+                  borderRadius: "35px 35px 0 0",
+                  overflow: "hidden",
+                  position: "relative",
+                  borderBottom: "9px solid #166EF0",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                  transition: "transform .3s ease, box-shadow .3s ease",
+                  "&:hover": {
+                    transform: "translateY(-4px)",
+                    boxShadow: "0 16px 32px rgba(0,0,0,0.14)",
+                  },
+                  "&:hover .dest-img": { transform: "scale(1.06)" },
                 }}
               >
-                <Typography
+                <CardMedia
+                  component="img"
+                  className="dest-img"
+                  image={d.img}
+                  alt={`${d.title}, ${d.subtitle}`}
                   sx={{
-                    fontFamily: "var(--font-urbanist)",
-                    fontWeight: 800,
-                    fontSize: isMobile ? 20 : 18,
-                    textShadow: "0 1px 8px rgba(0,0,0,.35)",
+                    height: "100%",
+                    objectFit: "cover",
+                    transition: "transform .5s ease",
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    background:
+                      "linear-gradient(180deg, rgba(0,0,0,0) 20%, rgba(0,0,0,0.85) 100%)",
+                    zIndex: 1,
+                  }}
+                />
+                <CardContent
+                  sx={{
+                    position: "absolute",
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    color: "#fff",
+                    p: 1.5,
+                    zIndex: 3,
                   }}
                 >
-                  {d.title}
-                </Typography>
-                <Typography
-                  sx={{
-                    fontFamily: "var(--font-outfit)",
-                    fontWeight: 500,
-                    fontSize: isMobile ? 16 : 14,
-                    opacity: 0.95,
-                  }}
-                >
-                  {d.subtitle}
-                </Typography>
-              </CardContent>
-            </Card>
+                  <Typography
+                    sx={{
+                      fontFamily: "var(--font-urbanist)",
+                      fontWeight: 800,
+                      fontSize: isMobile ? 20 : 18,
+                      textShadow: "0 1px 8px rgba(0,0,0,.35)",
+                    }}
+                  >
+                    {d.title}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontFamily: "var(--font-outfit)",
+                      fontWeight: 500,
+                      fontSize: isMobile ? 16 : 14,
+                      opacity: 0.95,
+                    }}
+                  >
+                    {d.subtitle}
+                  </Typography>
+                </CardContent>
+              </Card>
+            </Box>
           ))}
         </Box>
       </Box>
