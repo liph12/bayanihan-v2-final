@@ -132,6 +132,7 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
               src={image}
               alt={a.title || "News"}
               fill
+              quality={40}
               sizes="(max-width:600px) 260px, (max-width:900px) 290px, 320px"
               style={{
                 objectFit: "cover",
