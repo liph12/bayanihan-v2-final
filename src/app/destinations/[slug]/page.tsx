@@ -124,24 +124,23 @@ export default async function DestinationPage({ params }: PageProps) {
             }}
           >
             <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2.5, md: 4 }, pb: { xs: 3, md: 4.5 } }}>
-              <Box
-                component={NextLink}
-                href="/#top-destinations"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  color: "rgba(255,255,255,0.9)",
-                  textDecoration: "none",
-                  fontFamily: FONT_BODY,
-                  fontSize: 14,
-                  mb: 1.5,
-                  "&:hover": { color: "#fff" },
-                }}
-              >
-                <ArrowBackRoundedIcon sx={{ fontSize: 18 }} />
-                Back to destinations
-              </Box>
+              <NextLink href="/#top-destinations" style={{ textDecoration: "none" }}>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 0.5,
+                    color: "rgba(255,255,255,0.9)",
+                    fontFamily: FONT_BODY,
+                    fontSize: 14,
+                    mb: 1.5,
+                    "&:hover": { color: "#fff" },
+                  }}
+                >
+                  <ArrowBackRoundedIcon sx={{ fontSize: 18 }} />
+                  Back to destinations
+                </Box>
+              </NextLink>
               <Box
                 sx={{
                   display: "inline-flex",
@@ -245,21 +244,21 @@ export default async function DestinationPage({ params }: PageProps) {
             }}
           >
             {related.map((r) => (
-              <Box
+              <NextLink
                 key={r.slug}
-                component={NextLink}
                 href={destinationUrl(r.slug)}
-                sx={{
-                  position: "relative",
-                  height: { xs: 150, md: 180 },
-                  borderRadius: 3,
-                  overflow: "hidden",
-                  textDecoration: "none",
-                  display: "block",
-                  boxShadow: "0 6px 16px rgba(15,23,42,0.08)",
-                  "&:hover img": { transform: "scale(1.06)" },
-                }}
+                style={{ textDecoration: "none", display: "block" }}
               >
+                <Box
+                  sx={{
+                    position: "relative",
+                    height: { xs: 150, md: 180 },
+                    borderRadius: 3,
+                    overflow: "hidden",
+                    boxShadow: "0 6px 16px rgba(15,23,42,0.08)",
+                    "&:hover img": { transform: "scale(1.06)" },
+                  }}
+                >
                 <Image
                   src={r.img}
                   alt={`${r.title}, ${r.subtitle}`}
@@ -293,7 +292,8 @@ export default async function DestinationPage({ params }: PageProps) {
                     {r.subtitle}
                   </Typography>
                 </Box>
-              </Box>
+                </Box>
+              </NextLink>
             ))}
           </Box>
         </Box>
