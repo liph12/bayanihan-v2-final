@@ -4,7 +4,6 @@ import { Box, Typography } from "@mui/material";
 import NextLink from "next/link";
 import Image from "next/image";
 import ArticleRoundedIcon from "@mui/icons-material/ArticleRounded";
-import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import AxiosInstance from "@/lib/AxiosInstance";
 import { normalizeArticle, slugifyTitle } from "@/lib/newsHelpers";
@@ -275,105 +274,40 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
         py: { xs: 2.5, md: 3 },
       }}
     >
-      <Box
+      <Typography
+        component="h2"
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 2,
-          mb: 1.5,
+          fontFamily: FONT_HEAD,
+          fontWeight: 800,
+          fontSize: { xs: 22, md: 30 },
+          color: "#0f172a",
         }}
       >
-        <Box>
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.6,
-              px: 1,
-              py: 0.25,
-              borderRadius: 999,
-              bgcolor: "#fffbeb",
-              border: "1px solid #fde68a",
-              color: "#b45309",
-              fontFamily: FONT_HEAD,
-              fontSize: 9.5,
-              fontWeight: 800,
-              letterSpacing: "0.14em",
-              textTransform: "uppercase",
-              mb: 0.75,
-            }}
-          >
-            <ArticleRoundedIcon sx={{ fontSize: 11 }} />
-            Updates
-            {articles.length > 0 && (
-              <Box
-                component="span"
-                sx={{
-                  ml: 0.5,
-                  pl: 0.75,
-                  borderLeft: "1px solid #fde68a",
-                  color: "#0f172a",
-                  fontWeight: 900,
-                }}
-              >
-                {articles.length}
-              </Box>
-            )}
-          </Box>
-          <Typography
-            component="h2"
-            sx={{
-              fontFamily: FONT_HEAD,
-              fontWeight: 800,
-              fontSize: { xs: 22, md: 30 },
-              color: "#0f172a",
-            }}
-          >
-            Global Pinoy{" "}
-            <Box
-              component="span"
-              sx={{
-                background: ACCENT_GRADIENT,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Updates
-            </Box>
-          </Typography>
-        </Box>
-
+        Global Pinoy{" "}
         <Box
-          component={NextLink}
-          href="/news"
+          component="span"
           sx={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.3,
-            px: 1.25,
-            py: 0.55,
-            borderRadius: 999,
-            fontFamily: FONT_HEAD,
-            fontSize: 11.5,
-            fontWeight: 800,
-            color: "#fff",
-            textDecoration: "none",
             background: ACCENT_GRADIENT,
-            boxShadow: "0 6px 14px rgba(245,158,11,0.28)",
-            transition: "all .2s ease",
-            flexShrink: 0,
-            "&:hover": {
-              transform: "translateY(-1px)",
-              boxShadow: "0 8px 18px rgba(245,158,11,0.4)",
-            },
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
           }}
         >
-          See all
-          <ArrowForwardRoundedIcon sx={{ fontSize: 13 }} />
+          Updates
         </Box>
-      </Box>
+      </Typography>
+      <Typography
+        sx={{
+          fontFamily: FONT_BODY,
+          color: "#64748b",
+          fontSize: { xs: 14, md: 15 },
+          mt: 0.5,
+          mb: 3,
+        }}
+      >
+        The latest Filipino news, culture, and community stories from around
+        the world.
+      </Typography>
 
       {articles.length === 0 ? (
         <Box
@@ -397,7 +331,12 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
           </Typography>
         </Box>
       ) : (
-        <StoryRail accentColor="#b45309" deps={[articles.length]} autoScroll>
+        <StoryRail
+          accentColor="#b45309"
+          deps={[articles.length]}
+          autoScroll
+          showArrows={false}
+        >
           {articles.map((a, i) => (
             <Box key={a.id || a.slug || i}>{renderCard(a)}</Box>
           ))}

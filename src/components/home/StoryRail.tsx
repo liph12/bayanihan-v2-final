@@ -25,6 +25,8 @@ interface StoryRailProps {
   autoScroll?: boolean;
   /** Auto-scroll speed in pixels per second. Defaults to 40. */
   autoScrollSpeed?: number;
+  /** Show the left/right scroll arrows. Defaults to true. */
+  showArrows?: boolean;
 }
 
 const DRAG_THRESHOLD = 6;
@@ -35,6 +37,7 @@ export default function StoryRail({
   deps = [],
   autoScroll = false,
   autoScrollSpeed = 40,
+  showArrows = true,
 }: StoryRailProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [canLeft, setCanLeft] = useState(false);
@@ -285,7 +288,7 @@ export default function StoryRail({
         {children}
       </Box>
 
-      {canLeft && (
+      {showArrows && canLeft && (
         <IconButton
           aria-label="Scroll left"
           onPointerDown={(e) => e.stopPropagation()}
@@ -316,7 +319,7 @@ export default function StoryRail({
         </IconButton>
       )}
 
-      {canRight && (
+      {showArrows && canRight && (
         <IconButton
           aria-label="Scroll right"
           onPointerDown={(e) => e.stopPropagation()}
