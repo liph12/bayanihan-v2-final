@@ -26,6 +26,14 @@ const nextConfig = {
       "@mui/x-date-pickers",
       "recharts",
     ],
+    // Inline the page's CSS directly into the HTML <head> instead of emitting
+    // a separate render-blocking <link rel="stylesheet"> chunk. That CSS chunk
+    // sat on the LCP critical path (Lighthouse "Avoid chaining critical
+    // requests"): the browser had to download the HTML, discover the CSS link,
+    // then make a second round-trip before it could paint. Inlining removes
+    // that round-trip entirely. Our CSS footprint is tiny (~1 KiB), so the
+    // small HTML-size bump is far outweighed by dropping a critical request.
+    inlineCss: true,
   },
 
   // Drop console.* (except errors) from the production bundle.
