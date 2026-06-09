@@ -41,6 +41,26 @@ const nextConfig = {
     removeConsole:
       process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false,
   },
+
+  // Long-lived caching for the PWA manifest. It's a low-priority subresource
+  // the document links to, so the browser re-requests it on navigations unless
+  // it's cacheable. Caching it on the CDN + in the browser means it serves
+  // instantly (and drops off the request chain entirely after the first hit).
+  // The manifest changes only on deploy, and stale-while-revalidate refreshes
+  // it in the background, so a long max-age is safe.
+  async headers() {
+    return [
+      {
+        source: "/manifest.webmanifest",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
