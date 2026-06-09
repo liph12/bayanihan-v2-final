@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import NextLink from "next/link";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Breadcrumbs } from "@mui/material";
 import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import LocationOnRoundedIcon from "@mui/icons-material/LocationOnRounded";
+import NavigateNextRoundedIcon from "@mui/icons-material/NavigateNextRounded";
+import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import {
   DESTINATIONS,
   destinationUrl,
@@ -123,7 +125,7 @@ export default async function DestinationPage({ params }: PageProps) {
               bottom: 0,
             }}
           >
-            <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2.5, md: 4 }, pb: { xs: 3, md: 4.5 } }}>
+            <Box sx={{ maxWidth: 1650, mx: "auto", px: { xs: 2.5, md: 4, lg: 5 }, pb: { xs: 3, md: 4.5 } }}>
               <NextLink href="/#top-destinations" style={{ textDecoration: "none" }}>
                 <Box
                   sx={{
@@ -176,8 +178,51 @@ export default async function DestinationPage({ params }: PageProps) {
           </Box>
         </Box>
 
+        {/* ── Breadcrumb ── */}
+        <Box sx={{ bgcolor: "#fff", borderBottom: "1px solid #e5e7eb" }}>
+          <Box
+            sx={{
+              maxWidth: 1650,
+              mx: "auto",
+              px: { xs: 2.5, md: 4, lg: 5 },
+              py: { xs: 1.25, md: 1.5 },
+            }}
+          >
+            <Breadcrumbs
+              separator={
+                <NavigateNextRoundedIcon sx={{ fontSize: 16, color: "#94a3b8" }} />
+              }
+              aria-label="breadcrumb"
+              sx={{ fontFamily: FONT_BODY, fontSize: 13 }}
+            >
+              <NextLink
+                href="/"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  color: "#64748b",
+                  textDecoration: "none",
+                }}
+              >
+                <HomeRoundedIcon sx={{ fontSize: 16 }} />
+                Home
+              </NextLink>
+              <NextLink
+                href="/#top-destinations"
+                style={{ color: "#64748b", textDecoration: "none" }}
+              >
+                Destinations
+              </NextLink>
+              <Typography sx={{ color: "#0f172a", fontSize: 13, fontWeight: 600 }}>
+                {d.title}
+              </Typography>
+            </Breadcrumbs>
+          </Box>
+        </Box>
+
         {/* ── Content ── */}
-        <Box sx={{ maxWidth: 820, mx: "auto", px: { xs: 2.5, md: 3 }, pt: { xs: 4, md: 6 } }}>
+        <Box sx={{ maxWidth: 1650, mx: "auto", px: { xs: 2.5, md: 4, lg: 5 }, pt: { xs: 4, md: 6 } }}>
           <Typography
             sx={{
               fontFamily: FONT_BODY,
@@ -223,7 +268,7 @@ export default async function DestinationPage({ params }: PageProps) {
         </Box>
 
         {/* ── Explore more destinations ── */}
-        <Box sx={{ maxWidth: 1100, mx: "auto", px: { xs: 2.5, md: 3 }, mt: { xs: 4, md: 7 } }}>
+        <Box sx={{ maxWidth: 1650, mx: "auto", px: { xs: 2.5, md: 4, lg: 5 }, mt: { xs: 4, md: 7 } }}>
           <Typography
             component="h2"
             sx={{
