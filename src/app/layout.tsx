@@ -173,6 +173,11 @@ const WEBSITE_SCHEMA = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${urbanist.variable} ${outfit.variable}`}>
+      <head>
+        {/* Warm up the connection to the flag CDN used by the country chips. */}
+        <link rel="preconnect" href="https://flagcdn.com" />
+        <link rel="dns-prefetch" href="https://flagcdn.com" />
+      </head>
       <body>
         {/* Site-wide Organization JSON-LD — emitted once, on every page */}
         <script
