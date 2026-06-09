@@ -3,7 +3,6 @@ import { useState } from "react";
 import {
   Card,
   CardContent,
-  CardMedia,
   Typography,
   Box,
   IconButton,
@@ -11,6 +10,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import NextLink from "next/link";
+import Image from "next/image";
 import ChevronLeftRoundedIcon from "@mui/icons-material/ChevronLeftRounded";
 import ChevronRightRoundedIcon from "@mui/icons-material/ChevronRightRounded";
 import { DESTINATIONS, destinationUrl } from "@/lib/destinations";
@@ -122,16 +122,13 @@ export default function TopDestinations() {
                     "&:hover .dest-img": { transform: "scale(1.06)" },
                   }}
                 >
-                  <CardMedia
-                    component="img"
+                  <Image
                     className="dest-img"
-                    image={d.img}
+                    src={d.img}
                     alt={`${d.title}, ${d.subtitle}`}
-                    sx={{
-                      height: "100%",
-                      objectFit: "cover",
-                      transition: "transform .5s ease",
-                    }}
+                    fill
+                    sizes="(max-width: 600px) 100vw, (max-width: 900px) 34vw, 20vw"
+                    style={{ objectFit: "cover", transition: "transform .5s ease" }}
                   />
                   <Box
                     sx={{
