@@ -325,14 +325,12 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
             component="h2"
             sx={{
               fontFamily: FONT_HEAD,
-              fontWeight: 900,
-              fontSize: { xs: 18, sm: 20, md: 22 },
-              lineHeight: 1.15,
-              letterSpacing: "-0.015em",
+              fontWeight: 800,
+              fontSize: { xs: 22, md: 30 },
               color: "#0f172a",
             }}
           >
-            Global Pinoy Updates
+            Global Pinoy{" "}
             <Box
               component="span"
               sx={{
@@ -342,7 +340,7 @@ export default function NewsSection({ initialArticles = [] }: NewsSectionProps) 
                 backgroundClip: "text",
               }}
             >
-              .
+              Updates
             </Box>
           </Typography>
         </Box>
