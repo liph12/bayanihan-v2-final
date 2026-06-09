@@ -131,7 +131,7 @@ export default function GlobalLoader() {
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src="/profile/logo.png"
+          src="/profile/logo.webp"
           alt="Loading"
           style={{
             width: "100%",

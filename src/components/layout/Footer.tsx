@@ -31,7 +31,7 @@ import {
 import { EXTERNAL_RESOURCES } from "@/lib/externalResources";
 
 const BG = "#ECEAE3";
-const LOGO_SRC = "/profile/logo.png";
+const LOGO_SRC = "/profile/logo.webp";
 
 // Social-sharing links (share the site). Plain anchors so they're crawlable
 // and need no JS.

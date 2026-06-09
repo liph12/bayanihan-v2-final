@@ -256,7 +256,7 @@ export default function ProfileSidebar() {
         }}
       >
         <Image
-          src="/profile/logo.png"
+          src="/profile/logo.webp"
           alt="Bayanihan"
           width={120}
           height={45}

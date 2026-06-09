@@ -44,7 +44,7 @@ interface NavItem {
 // High-resolution local logo (1740x396) — natively crisp on HiDPI displays.
 // The old S3 URL was a small webp that pixelated when scaled up by the
 // device pixel ratio.
-const LOGO_SRC = "/profile/logo.png";
+const LOGO_SRC = "/profile/logo.webp";
 const LOGO_INTRINSIC_WIDTH = 1740;
 const LOGO_INTRINSIC_HEIGHT = 396;
 const LOGO_DISPLAY_HEIGHT = 44;

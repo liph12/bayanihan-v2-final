@@ -142,7 +142,7 @@ export default async function ArticlePage({ params }: PageProps) {
       name: "Bayanihan.com",
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/profile/logo.png`,
+        url: `${SITE_URL}/profile/logo.webp`,
       },
     },
     mainEntityOfPage: canonicalUrl,

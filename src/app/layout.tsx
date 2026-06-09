@@ -129,7 +129,7 @@ const ORG_SCHEMA = {
   name: "Bayanihan.com",
   alternateName: "Bayanihan",
   url: "https://bayanihan.com",
-  logo: "https://bayanihan.com/profile/logo.png",
+  logo: "https://bayanihan.com/profile/logo.webp",
   description:
     "Bayanihan.com connects Filipinos worldwide through events, culture, and cuisine.",
   sameAs: ["https://www.facebook.com/bayanihanglobal"],
