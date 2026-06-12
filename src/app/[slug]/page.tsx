@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { serverGet } from "@/lib/serverFetch";
+import { ogImageUrl } from "@/lib/ogImage";
 import EventDetailClient, {
   type FetchedEvent,
 } from "@/components/event/EventDetailClient";
@@ -135,7 +136,7 @@ export async function generateMetadata({
     const detail = await fetchEventDetail(match.event.slug);
     const title = detail?.title || match.event.title || "Event";
     const description = stripHtml(detail?.description) || title;
-    const image = detail?.image;
+    const image = ogImageUrl(detail?.image);
     return {
       title: `${title} | Bayanihan.com`,
       description,
@@ -164,7 +165,7 @@ export async function generateMetadata({
     detail?.description ||
     [detail?.address, detail?.city, detail?.country].filter(Boolean).join(", ") ||
     name;
-  const image = detail?.cover || detail?.logo;
+  const image = ogImageUrl(detail?.cover || detail?.logo);
   return {
     title: `${name} | Bayanihan.com`,
     description,

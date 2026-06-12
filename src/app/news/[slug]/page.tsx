@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { serverGet } from "@/lib/serverFetch";
 import NewsDetailContent from "@/components/news/NewsDetailContent";
 import { normalizeArticle } from "@/lib/newsHelpers";
+import { ogImageUrl } from "@/lib/ogImage";
 import type { NewsArticle } from "@/types";
 
 // The single-article endpoint returns the article fields at the TOP LEVEL
@@ -94,6 +95,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       ? article.summary.join(" ").slice(0, 200)
       : "";
   const canonicalPath = `/news/${slug}`;
+  const shareImage = ogImageUrl(article.image_url);
   return {
     title: article.title || "News",
     description: summaryText,
@@ -103,7 +105,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: summaryText,
       url: canonicalPath,
       type: "article",
-      images: article.image_url ? [{ url: article.image_url }] : undefined,
+      images: shareImage ? [{ url: shareImage }] : undefined,
       publishedTime: article.published_at || article.date || undefined,
       modifiedTime: article.updated_at || undefined,
       authors: article.author ? [article.author] : undefined,
@@ -112,7 +114,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: article.title,
       description: summaryText,
-      images: article.image_url ? [article.image_url] : undefined,
+      images: shareImage ? [shareImage] : undefined,
     },
   };
 }
