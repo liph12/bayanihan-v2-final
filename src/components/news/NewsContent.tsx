@@ -9,12 +9,19 @@ import {
   Tab,
   Stack,
   Pagination,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Link from "next/link";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import CloseIcon from "@mui/icons-material/Close";
 import AxiosInstance from "@/lib/AxiosInstance";
 import { normalizeArticle, slugifyTitle } from "@/lib/newsHelpers";
 import type { NewsArticle, NewsPage } from "@/types";
@@ -431,6 +438,131 @@ function LatestNewsItem({ article }: { article?: NewsArticle | null }) {
   );
 }
 
+function articleExcerpt(a: NewsArticle): string {
+  if (a.excerpt) return a.excerpt;
+  if (a.description) return a.description;
+  if (typeof a.summary === "string") return a.summary;
+  if (Array.isArray(a.summary)) return a.summary.join(" ");
+  return "";
+}
+
+// Larger, more readable article row used inside the calendar day modal.
+function ModalNewsItem({
+  article,
+  onNavigate,
+}: {
+  article?: NewsArticle | null;
+  onNavigate?: () => void;
+}) {
+  if (!article) return null;
+  const to = `/news/${article.slug || slugifyTitle(article.title || "")}`;
+  const views = Number(article.views_count ?? article.views ?? 0) || 0;
+  const excerpt = articleExcerpt(article);
+  return (
+    <Box
+      component={Link}
+      href={to}
+      onClick={onNavigate}
+      sx={{
+        display: "flex",
+        gap: { xs: 1.5, sm: 2.5 },
+        py: 2,
+        textDecoration: "none",
+        color: "inherit",
+        borderBottom: "1px solid #eef2f7",
+        "&:last-of-type": { borderBottom: "none" },
+        "&:hover .modal-title": { color: "info.main" },
+        "&:hover img": { transform: "scale(1.05)" },
+      }}
+    >
+      <Box
+        sx={{
+          width: { xs: 110, sm: 170 },
+          height: { xs: 80, sm: 115 },
+          flexShrink: 0,
+          borderRadius: 1.5,
+          overflow: "hidden",
+        }}
+      >
+        <ArticleImage
+          src={article.image_url}
+          alt={article.title}
+          sx={{ transition: "transform 0.4s ease" }}
+        />
+      </Box>
+      <Box sx={{ minWidth: 0 }}>
+        {article.category && (
+          <Chip
+            label={article.category}
+            size="small"
+            sx={{
+              mb: 0.75,
+              height: 22,
+              bgcolor: "#fff7e6",
+              color: "#92400e",
+              fontWeight: 700,
+              fontSize: 11,
+              textTransform: "uppercase",
+              letterSpacing: 0.5,
+            }}
+          />
+        )}
+        <Typography
+          className="modal-title"
+          sx={{
+            fontWeight: 700,
+            fontSize: { xs: 16, sm: 18 },
+            lineHeight: 1.3,
+            color: "#0f172a",
+            display: "-webkit-box",
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+            transition: "color 0.2s",
+          }}
+        >
+          {article.title}
+        </Typography>
+        {excerpt && (
+          <Typography
+            sx={{
+              mt: 0.75,
+              fontSize: 14,
+              lineHeight: 1.5,
+              color: "#475569",
+              display: "-webkit-box",
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+            }}
+          >
+            {excerpt}
+          </Typography>
+        )}
+        <Stack
+          direction="row"
+          spacing={1.5}
+          alignItems="center"
+          sx={{ mt: 1, color: "#94a3b8" }}
+        >
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <AccessTimeIcon sx={{ fontSize: 14 }} />
+            <Typography variant="caption" sx={{ fontSize: 12.5 }}>
+              {formatDate(article.date)}
+            </Typography>
+          </Stack>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            <VisibilityOutlinedIcon sx={{ fontSize: 15 }} />
+            <Typography variant="caption" sx={{ fontSize: 12.5, fontWeight: 600 }}>
+              {views.toLocaleString()}
+            </Typography>
+          </Stack>
+        </Stack>
+      </Box>
+    </Box>
+  );
+}
+
 function SidebarBlock({
   title,
   children,
@@ -469,11 +601,275 @@ function SidebarBlock({
   );
 }
 
+const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+// Month-view calendar for the sidebar. Highlights today and marks any day in
+// the displayed month that has at least one published article with a dot.
+// "Today"/month are derived on mount (not during SSR) to avoid a hydration
+// mismatch when the server timezone differs from the visitor's.
+function SidebarCalendar({ articles }: { articles: NewsArticle[] }) {
+  const [today, setToday] = useState<Date | null>(null);
+  const [viewDate, setViewDate] = useState<Date | null>(null); // 1st of shown month
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+
+  useEffect(() => {
+    // Derive "today" on the client only — running this during SSR would risk a
+    // hydration mismatch when the server timezone differs from the visitor's.
+    const now = new Date();
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setToday(now);
+    setViewDate(new Date(now.getFullYear(), now.getMonth(), 1));
+  }, []);
+
+  // Map each day-of-month in the displayed month to the articles published on
+  // it, so clicking a date can list them in the modal.
+  const newsByDay = useMemo(() => {
+    const map = new Map<number, NewsArticle[]>();
+    if (!viewDate) return map;
+    const y = viewDate.getFullYear();
+    const m = viewDate.getMonth();
+    for (const a of articles) {
+      if (!a.date) continue;
+      const d = new Date(a.date);
+      if (Number.isNaN(d.getTime())) continue;
+      if (d.getFullYear() === y && d.getMonth() === m) {
+        const day = d.getDate();
+        const list = map.get(day);
+        if (list) list.push(a);
+        else map.set(day, [a]);
+      }
+    }
+    return map;
+  }, [articles, viewDate]);
+
+  // Reserve space until mounted so the sidebar doesn't shift.
+  if (!viewDate || !today) {
+    return <Skeleton variant="rounded" height={300} />;
+  }
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const isCurrentMonth =
+    today.getFullYear() === year && today.getMonth() === month;
+  const todayDate = today.getDate();
+
+  const cells: (number | null)[] = [];
+  for (let i = 0; i < firstWeekday; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const monthLabel = new Intl.DateTimeFormat("en-US", {
+    month: "long",
+    year: "numeric",
+  }).format(viewDate);
+
+  const dayCount =
+    selectedDay !== null ? newsByDay.get(selectedDay)?.length ?? 0 : 0;
+
+  return (
+    <Box
+      sx={{
+        border: "1px solid #e5e7eb",
+        borderRadius: 2,
+        p: 2,
+        bgcolor: "#fff",
+      }}
+    >
+      {/* Month header + navigation */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        sx={{ mb: 1.5 }}
+      >
+        <IconButton
+          size="small"
+          aria-label="Previous month"
+          onClick={() => {
+            setViewDate(new Date(year, month - 1, 1));
+            setSelectedDay(null);
+          }}
+        >
+          <ChevronLeftIcon fontSize="small" />
+        </IconButton>
+        <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#0f172a" }}>
+          {monthLabel}
+        </Typography>
+        <IconButton
+          size="small"
+          aria-label="Next month"
+          onClick={() => {
+            setViewDate(new Date(year, month + 1, 1));
+            setSelectedDay(null);
+          }}
+        >
+          <ChevronRightIcon fontSize="small" />
+        </IconButton>
+      </Stack>
+
+      {/* Weekday labels */}
+      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", mb: 0.5 }}>
+        {WEEKDAYS.map((w) => (
+          <Typography
+            key={w}
+            sx={{
+              textAlign: "center",
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#94a3b8",
+              py: 0.5,
+            }}
+          >
+            {w}
+          </Typography>
+        ))}
+      </Box>
+
+      {/* Day grid */}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "repeat(7, 1fr)",
+          rowGap: 0.5,
+        }}
+      >
+        {cells.map((d, i) => {
+          if (d === null) return <Box key={`empty-${i}`} />;
+          const isToday = isCurrentMonth && d === todayDate;
+          const count = newsByDay.get(d)?.length ?? 0;
+          const hasNews = count > 0;
+          return (
+            <Box
+              key={`day-${d}`}
+              role="button"
+              tabIndex={0}
+              aria-label={`${monthLabel} ${d}${
+                hasNews ? ` — ${count} article${count > 1 ? "s" : ""}` : ""
+              }`}
+              onClick={() => setSelectedDay(d)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedDay(d);
+                }
+              }}
+              sx={{
+                position: "relative",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                aspectRatio: "1 / 1",
+                fontSize: 13,
+                fontWeight: isToday ? 800 : 500,
+                borderRadius: "50%",
+                cursor: "pointer",
+                userSelect: "none",
+                color: isToday ? "#0f172a" : "#334155",
+                bgcolor: isToday ? ACCENT : "transparent",
+                transition: "background-color 0.15s",
+                "&:hover": { bgcolor: isToday ? ACCENT : "#f1f5f9" },
+              }}
+            >
+              {d}
+              {hasNews && !isToday && (
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: 3,
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    width: 4,
+                    height: 4,
+                    borderRadius: "50%",
+                    bgcolor: ACCENT,
+                  }}
+                />
+              )}
+            </Box>
+          );
+        })}
+      </Box>
+
+      {/* Day detail modal: news published on the clicked date */}
+      <Dialog
+        open={selectedDay !== null}
+        onClose={() => setSelectedDay(null)}
+        fullWidth
+        maxWidth="lg"
+        slotProps={{
+          paper: {
+            sx: { borderRadius: 3, width: "100%" },
+          },
+        }}
+      >
+        <DialogTitle
+          component="div"
+          sx={{
+            display: "flex",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+            gap: 1,
+            pr: 1,
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{ fontWeight: 800, fontSize: { xs: 20, sm: 24 }, lineHeight: 1.2 }}
+            >
+              {selectedDay !== null
+                ? new Intl.DateTimeFormat("en-US", {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  }).format(new Date(year, month, selectedDay))
+                : ""}
+            </Typography>
+            <Typography
+              sx={{ mt: 0.75, fontSize: 15, fontWeight: 600, color: "#64748b" }}
+            >
+              {dayCount} {dayCount === 1 ? "news article" : "news articles"}{" "}
+              created
+            </Typography>
+          </Box>
+          <IconButton
+            aria-label="Close"
+            onClick={() => setSelectedDay(null)}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers sx={{ px: { xs: 2, sm: 3 }, py: 1 }}>
+          {dayCount > 0 ? (
+            newsByDay
+              .get(selectedDay!)!
+              .map((a, idx) => (
+                <ModalNewsItem
+                  key={`modal-${a.slug || idx}`}
+                  article={a}
+                  onNavigate={() => setSelectedDay(null)}
+                />
+              ))
+          ) : (
+            <Typography
+              color="text.secondary"
+              sx={{ py: 5, textAlign: "center", fontSize: 16 }}
+            >
+              No news published on this day.
+            </Typography>
+          )}
+        </DialogContent>
+      </Dialog>
+    </Box>
+  );
+}
+
 // =============================================================================
 //   MAIN COMPONENT
 // =============================================================================
 
-const POPULAR_PER_PAGE = 6;
+const POPULAR_PER_PAGE = 8;
 
 interface NewsContentProps {
   initial: NewsPage;
@@ -821,6 +1217,9 @@ export default function NewsContent({ initial }: NewsContentProps) {
                   article={a}
                 />
               ))}
+            </SidebarBlock>
+            <SidebarBlock title="Calendar">
+              <SidebarCalendar articles={uniqueItems} />
             </SidebarBlock>
           </Grid>
         </Grid>
