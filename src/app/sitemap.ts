@@ -32,6 +32,7 @@ const STATIC_PATHS: Array<{
   { path: "/browse-events", priority: 0.9, changeFrequency: "daily" },
   { path: "/restaurant", priority: 0.9, changeFrequency: "daily" },
   { path: "/news", priority: 0.9, changeFrequency: "daily" },
+  { path: "/consulate-directory", priority: 0.8, changeFrequency: "weekly" },
   { path: "/global-calendar", priority: 0.8, changeFrequency: "daily" },
   { path: "/about", priority: 0.6, changeFrequency: "monthly" },
   { path: "/articles", priority: 0.6, changeFrequency: "weekly" },

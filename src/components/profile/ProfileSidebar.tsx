@@ -31,6 +31,7 @@ import {
   PostAddRounded,
   DashboardRounded,
   InsightsRounded,
+  AccountBalanceRounded,
 } from "@mui/icons-material";
 import Link from "next/link";
 import Image from "next/image";
@@ -202,6 +203,11 @@ export default function ProfileSidebar() {
           icon: <StorefrontRounded />,
           name: "Restaurant List",
           path: "/profile/restaurants",
+        },
+        {
+          icon: <AccountBalanceRounded />,
+          name: "Consulate Offices",
+          path: "/profile/consulate-offices",
         },
         {
           icon: <QueryStatsRounded />,

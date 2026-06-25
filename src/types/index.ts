@@ -82,6 +82,26 @@ export interface NewsPage {
   error?: string | null;
 }
 
+export interface ConsulateOffice {
+  id?: string | number;
+  country: string;
+  office_name: string;
+  office_logo?: string | null;
+  address?: string | null;
+  email?: string | null;
+  contact_number?: string | null;
+  website?: string | null;
+  facebook_link?: string | null;
+  photos?: string[] | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}
+
+export interface ConsulateDirectory {
+  items: ConsulateOffice[];
+  error?: string | null;
+}
+
 export interface Country {
   code: string;
   name: string;

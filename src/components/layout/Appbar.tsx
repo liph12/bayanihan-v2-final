@@ -23,6 +23,7 @@ import EventRoundedIcon from "@mui/icons-material/EventRounded";
 import RestaurantRoundedIcon from "@mui/icons-material/RestaurantRounded";
 import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import NewspaperRoundedIcon from "@mui/icons-material/NewspaperRounded";
+import AccountBalanceRoundedIcon from "@mui/icons-material/AccountBalanceRounded";
 import ContactMailRoundedIcon from "@mui/icons-material/ContactMailRounded";
 import LoginRoundedIcon from "@mui/icons-material/LoginRounded";
 import MenuRoundedIcon from "@mui/icons-material/MenuRounded";
@@ -136,6 +137,11 @@ export default function Appbar() {
       Icon: CalendarMonthRoundedIcon,
     },
     { label: "News", to: "/news", Icon: NewspaperRoundedIcon },
+    {
+      label: "Consulates",
+      to: "/consulate-directory",
+      Icon: AccountBalanceRoundedIcon,
+    },
     {
       label: "Contact",
       to: "/contact-us",
