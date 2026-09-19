@@ -26,6 +26,7 @@ import Grid from "@mui/material/Grid2";
 import { styled, alpha } from "@mui/material/styles";
 import axios from "axios";
 import AxiosInstance from "@/lib/AxiosInstance";
+import { toEventSubdomain } from "@/lib/toSubdomain";
 import dayjs, { type Dayjs } from "dayjs";
 
 import InfoIcon from "@mui/icons-material/Info";
@@ -37,7 +38,6 @@ import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import EventSidebar, { type EventFields } from "./EventSidebar";
 import CreateMedia from "./CreateMedia";
 import LogoDropImage from "./LogoDropImage";
-import EventSubdomainField from "./EventSubdomainField";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -141,7 +141,6 @@ interface DefaultFields {
   logo: File | null;
   gallery: unknown;
   country_code: string;
-  sub_domain: string;
 }
 
 const defaultFields: DefaultFields = {
@@ -160,7 +159,6 @@ const defaultFields: DefaultFields = {
   logo: null,
   gallery: null,
   country_code: "",
-  sub_domain: "",
 };
 
 function ErrorLabel({ text }: { text?: string }) {
@@ -199,7 +197,6 @@ export default function CreateEventContent() {
   const [seoTags, setSeoTags] = useState<string[]>([]);
   const [isGeneratingTags, setIsGeneratingTags] = useState(false);
   const [isGeneratingTitle, setIsGeneratingTitle] = useState(false);
-  const [isValidSubDomain, setIsValidSubDomain] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const logoInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -315,6 +312,9 @@ export default function CreateEventContent() {
       });
 
       formData.append("seo_tags", JSON.stringify(seoTags));
+      // The public link is derived from the title rather than typed by the
+      // organizer: bayanihan.com/<title-derived segment>.
+      formData.append("sub_domain", toEventSubdomain(eventFields.title));
 
       const response = await axios.post("/api/profile/create-event", formData, {
         headers: {
@@ -422,12 +422,6 @@ export default function CreateEventContent() {
                 >
                   General Information
                 </SectionTitle>
-
-                <EventSubdomainField
-                  setEventFieldByProperty={setEventFieldByProperty}
-                  subDomainValue={eventFields.sub_domain}
-                  setIsValidSubDomain={setIsValidSubDomain}
-                />
 
                 <CustomTextField
                   label="Event Title"
@@ -828,7 +822,7 @@ export default function CreateEventContent() {
               </FormSection>
 
               <Button
-                disabled={!isValidSubDomain || onProgressSubmit}
+                disabled={!eventFields.title.trim() || onProgressSubmit}
                 type="submit"
                 variant="contained"
                 fullWidth

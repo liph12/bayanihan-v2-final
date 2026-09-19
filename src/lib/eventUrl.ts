@@ -2,22 +2,25 @@
 // Public URL preserves hyphens: backend slug "my-event-2025" → URL "/my-event-2025".
 // Subdomain field is preferred (it's the vanity URL); if absent, fall back to slug.
 
-import type { BayanihanEvent, Restaurant } from "@/types";
-
 export function slugToUrl(slug?: string | null): string {
   return slug ? `/${slug}` : "";
 }
 
-type Linkable = BayanihanEvent | Restaurant;
+// Structural shape — covers BayanihanEvent / Restaurant as well as the
+// lighter records the search endpoint returns (where subDomain is a string).
+type Linkable = {
+  id?: string | number;
+  slug?: string | null;
+  subDomain?: { name?: string | null } | string | null;
+  subdomain?: { name?: string | null } | string | null;
+};
 
 function getSubdomainName(item: Linkable): string | undefined {
-  return (
-    item.subDomain?.name ||
-    (typeof (item as { subdomain?: { name?: string } | string }).subdomain ===
-    "string"
-      ? ((item as { subdomain?: string }).subdomain as string)
-      : (item as { subdomain?: { name?: string } }).subdomain?.name)
-  );
+  for (const field of [item.subDomain, item.subdomain]) {
+    if (typeof field === "string" && field) return field;
+    if (field && typeof field === "object" && field.name) return field.name;
+  }
+  return undefined;
 }
 
 // Build a same-origin URL for an event, preferring the subdomain (vanity)

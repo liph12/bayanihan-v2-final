@@ -12,9 +12,11 @@ import {
 } from "@mui/material";
 import Grid from "@mui/material/Grid2";
 import Image from "next/image";
+import NextLink from "next/link";
 import SearchIcon from "@mui/icons-material/Search";
 import InfoIcon from "@mui/icons-material/Info";
 import AxiosInstance from "@/lib/AxiosInstance";
+import { eventUrl } from "@/lib/eventUrl";
 import PopularCountries from "./PopularCountries";
 import type { Country } from "@/types";
 
@@ -24,7 +26,9 @@ const HERO_IMAGE =
   "https://filipinohomes123.s3.ap-southeast-1.amazonaws.com/bayanihan/banner_images/banner2.webp";
 
 interface SearchResult {
+  id?: number;
   title?: string;
+  slug?: string;
   subDomain?: string;
   country_code?: string;
 }
@@ -219,15 +223,13 @@ export default function Banner({ initialCountries = [] }: BannerProps) {
               >
                 <Grid container>
                   {searchResults.map((result, i) => {
-                    const routePath = result?.subDomain
-                      ? `https://${result.subDomain}.bayanihan.com`
-                      : "#";
+                    // Same-origin path (/vanity-or-slug), matching the links
+                    // on the event and restaurant cards elsewhere on the page.
+                    const routePath = eventUrl(result) || "#";
                     return (
                       <Grid size={{ xs: 12 }} key={i}>
-                        <a
+                        <NextLink
                           href={routePath}
-                          target="_blank"
-                          rel="noopener noreferrer"
                           style={{ textDecoration: "none" }}
                         >
                           <Card
@@ -266,7 +268,7 @@ export default function Banner({ initialCountries = [] }: BannerProps) {
                               </Grid>
                             </CardContent>
                           </Card>
-                        </a>
+                        </NextLink>
                       </Grid>
                     );
                   })}

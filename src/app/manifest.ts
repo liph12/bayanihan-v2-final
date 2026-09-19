@@ -17,16 +17,17 @@ export default function manifest(): MetadataRoute.Manifest {
     // icons, OG image accent).
     theme_color: "#F77F00",
     icons: [
-      // Next.js auto-resolves the generated icon routes — point at them
-      // by path. The OS chooses the closest match for the device.
+      // Static PNGs in /public, generated from the brand wordmark. The OS
+      // chooses the closest match for the device.
       {
-        src: "/icon",
-        sizes: "32x32",
+        src: "/icon-192.png",
+        sizes: "192x192",
         type: "image/png",
+        purpose: "any",
       },
       {
-        src: "/apple-icon",
-        sizes: "180x180",
+        src: "/icon-512.png",
+        sizes: "512x512",
         type: "image/png",
         purpose: "any",
       },
