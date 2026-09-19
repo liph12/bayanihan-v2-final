@@ -167,6 +167,29 @@ function subdomainOf(item: BayanihanEvent | Restaurant): string | undefined {
   return slug || undefined;
 }
 
+// How many upcoming events a country page would actually render. Mirrors
+// /country/<code>: same endpoint, same upcoming-only rule, so a country is
+// listed here only when the page has content.
+async function countryEventCount(code: string): Promise<number> {
+  try {
+    const data = await serverGet<EventsResponse | BayanihanEvent[]>(
+      `events-list/${code.toUpperCase()}`,
+      { revalidate: 300 }
+    );
+    const list = Array.isArray(data)
+      ? data
+      : data?.data?.events ?? data?.events ?? [];
+    if (!Array.isArray(list)) return 0;
+    const now = Date.now();
+    return list.filter((e) => {
+      const parsed = Date.parse(e?.eventDate || e?.date || "");
+      return !Number.isNaN(parsed) && parsed >= now;
+    }).length;
+  } catch {
+    return 0;
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
   const entries: MetadataRoute.Sitemap = STATIC_PATHS.map((p) => ({
@@ -205,16 +228,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // Country pages live under /country/<code>. Index the popular set (always)
-  // PLUS any country that currently has at least one event — so pages like
-  // /country/hk get crawled the moment they have content, while empty/thin
-  // country pages stay out of the sitemap. New countries appear automatically
-  // as events are added (this list regenerates with the sitemap).
-  const countryCodesToIndex = new Set<string>(POPULAR_ORDER);
+  // Country pages live under /country/<code>, and only the ones that have
+  // something to list belong here. The popular set used to be included
+  // unconditionally, which submitted seven empty pages (AE, CA, SA, TW, OM,
+  // KW, BH had no events) — near-identical boilerplate that Google reports
+  // as soft 404s. Ask the same endpoint the page itself renders from, so the
+  // sitemap and the page can never disagree, and a country reappears the
+  // moment it has an event.
+  const candidateCodes = new Set<string>(POPULAR_ORDER);
   for (const e of events) {
     const cc = eventCountryCode(e);
-    if (cc) countryCodesToIndex.add(cc);
+    if (cc) candidateCodes.add(cc);
   }
+  const candidates = [...candidateCodes];
+  const countsPerCountry = await Promise.all(
+    candidates.map((cc) => countryEventCount(cc))
+  );
+  const countryCodesToIndex = candidates.filter(
+    (_, i) => countsPerCountry[i] > 0
+  );
   for (const cc of countryCodesToIndex) {
     entries.push({
       url: `${SITE_URL}/country/${cc.toLowerCase()}`,

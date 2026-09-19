@@ -54,6 +54,22 @@ async function fetchEventsForCountry(
   }
 }
 
+function getEventTimestamp(event: BayanihanEvent): number {
+  const val = event?.eventDate || event?.date;
+  const parsed = Date.parse(val || "");
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+// Extracted to a helper so the impure Date.now() call doesn't trip the
+// React Compiler purity check that fires on calls made directly inside
+// a component's render body.
+function filterUpcomingSorted(events: BayanihanEvent[]): BayanihanEvent[] {
+  const now = Date.now();
+  return events
+    .filter((e) => getEventTimestamp(e) >= now)
+    .sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a));
+}
+
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
@@ -61,6 +77,17 @@ export async function generateMetadata({
   const country = findCountry(code);
   if (!country) return { title: "Country Not Found" };
   const canonical = `/country/${code.toLowerCase()}`;
+
+  // A country with no upcoming events renders ~650 words of boilerplate with
+  // only the country name swapped in — seven of these were near-identical
+  // empty pages. Google reports those as soft 404s or "crawled, currently
+  // not indexed", and they spend crawl budget that the real pages need.
+  // The page stays reachable for visitors; it just asks not to be indexed
+  // until it has something to show, which reverses itself automatically as
+  // soon as an event lands in that country.
+  const upcomingCount = filterUpcomingSorted(
+    await fetchEventsForCountry(code)
+  ).length;
   // Title carries the main query plus its common variants (gatherings,
   // festivals) so it ranks for "Filipino events/gatherings/festivals in X".
   const title = `Filipino Events, Festivals & Gatherings in ${country.name}`;
@@ -78,6 +105,9 @@ export async function generateMetadata({
       "Filipino community worldwide",
     ],
     alternates: { canonical },
+    ...(upcomingCount === 0
+      ? { robots: { index: false, follow: true } }
+      : {}),
     openGraph: {
       title,
       description,
@@ -90,22 +120,6 @@ export async function generateMetadata({
       description,
     },
   };
-}
-
-function getEventTimestamp(event: BayanihanEvent): number {
-  const val = event?.eventDate || event?.date;
-  const parsed = Date.parse(val || "");
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
-// Extracted to a helper so the impure Date.now() call doesn't trip the
-// React Compiler purity check that fires on calls made directly inside
-// a component's render body.
-function filterUpcomingSorted(events: BayanihanEvent[]): BayanihanEvent[] {
-  const now = Date.now();
-  return events
-    .filter((e) => getEventTimestamp(e) >= now)
-    .sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a));
 }
 
 function formatDate(input?: string | null): string {
