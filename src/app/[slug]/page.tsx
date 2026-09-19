@@ -95,7 +95,14 @@ const resolveMatch = cache(async (urlSlug: string): Promise<Match> => {
   // detail endpoint directly before giving up. This resolves URLs that match
   // the event's slug; a vanity-subdomain URL for a past event still can't be
   // resolved without a backend lookup that maps subdomain → slug.
-  const detail = await fetchEventDetail(urlSlug);
+  //
+  // `retries: 0` matters here. The endpoint answers an unknown slug with a
+  // 500, which serverGet otherwise treats as a flaky origin and retries —
+  // turning every 404 into four upstream calls. A miss is the expected
+  // outcome of this probe, not a transient failure. A hit still gets the
+  // retry-backed fetch below, because the URL is identical and Next serves
+  // the second call from the fetch cache.
+  const detail = await probeEventBySlug(urlSlug);
   if (detail?.slug) {
     return {
       kind: "event",
@@ -109,6 +116,20 @@ const resolveMatch = cache(async (urlSlug: string): Promise<Match> => {
 
   return null;
 });
+
+const probeEventBySlug = cache(
+  async (slug: string): Promise<FetchedEvent | null> => {
+    try {
+      const resp = await serverGet<EventDetailResponse>(
+        `view-event/${SSR_COOKIE_ID}/${slug}`,
+        { revalidate: LOOKUP_REVALIDATE, retries: 0 }
+      );
+      return resp?.data ?? null;
+    } catch {
+      return null;
+    }
+  }
+);
 
 const fetchEventDetail = cache(
   async (realSlug: string): Promise<FetchedEvent | null> => {
