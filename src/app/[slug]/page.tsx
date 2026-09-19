@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import { serverGet } from "@/lib/serverFetch";
 import { ogImageUrl } from "@/lib/ogImage";
+import { toSchemaDate } from "@/lib/schemaDate";
+import { eventUrl } from "@/lib/eventUrl";
 import EventDetailClient, {
   type FetchedEvent,
 } from "@/components/event/EventDetailClient";
@@ -31,6 +33,13 @@ interface RestaurantDetailResponse {
 
 const SSR_COOKIE_ID = "ssr-bot";
 
+// ISR window for the lookups below. These used to run with `no-store`, which
+// meant every hit — including every crawl — re-fetched the full events list
+// and the 668KB restaurants list before the page could start rendering (TTFB
+// measured at 2.4–3.7s). 60s keeps a newly published event discoverable
+// within a minute while taking the API off the critical path.
+const LOOKUP_REVALIDATE = 60;
+
 function getSubdomainName(
   ev: BayanihanEvent | Restaurant
 ): string | undefined {
@@ -49,11 +58,9 @@ type Match =
   | null;
 
 const resolveMatch = cache(async (urlSlug: string): Promise<Match> => {
-  // Always fetch fresh — newly-created events/restaurants must be findable
-  // immediately, even if the home page's events-list cache is still stale.
   try {
     const resp = await serverGet<EventsListResponse>("events", {
-      noStore: true,
+      revalidate: LOOKUP_REVALIDATE,
     });
     const list = resp?.data?.events ?? resp?.events ?? [];
     const ev = list.find((e) => {
@@ -67,7 +74,7 @@ const resolveMatch = cache(async (urlSlug: string): Promise<Match> => {
 
   try {
     const resp = await serverGet<RestaurantsListResponse>("restaurants", {
-      noStore: true,
+      revalidate: LOOKUP_REVALIDATE,
     });
     const list =
       resp?.data?.restaurants ??
@@ -83,6 +90,23 @@ const resolveMatch = cache(async (urlSlug: string): Promise<Match> => {
     if (r) return { kind: "restaurant", restaurant: r };
   } catch {}
 
+  // The events list only carries current/upcoming events, so a past event's
+  // URL used to 404 even though the detail endpoint still serves it. Ask the
+  // detail endpoint directly before giving up. This resolves URLs that match
+  // the event's slug; a vanity-subdomain URL for a past event still can't be
+  // resolved without a backend lookup that maps subdomain → slug.
+  const detail = await fetchEventDetail(urlSlug);
+  if (detail?.slug) {
+    return {
+      kind: "event",
+      event: {
+        id: detail.id,
+        title: detail.title,
+        slug: detail.slug,
+      } as unknown as BayanihanEvent,
+    };
+  }
+
   return null;
 });
 
@@ -91,7 +115,9 @@ const fetchEventDetail = cache(
     try {
       const resp = await serverGet<EventDetailResponse>(
         `view-event/${SSR_COOKIE_ID}/${realSlug}`,
-        { noStore: true }
+        // Safe to cache: EventDetailClient re-requests this with the
+        // visitor's own cookie id, and that call is what counts a view.
+        { revalidate: LOOKUP_REVALIDATE }
       );
       return resp?.data ?? null;
     } catch {
@@ -105,7 +131,7 @@ const fetchRestaurantDetail = cache(
     try {
       const resp = await serverGet<RestaurantDetailResponse>(
         `restaurants/${id}`,
-        { noStore: true }
+        { revalidate: LOOKUP_REVALIDATE }
       );
       return resp?.data ?? null;
     } catch {
@@ -129,7 +155,14 @@ export async function generateMetadata({
   const match = await resolveMatch(slug);
   if (!match) return { title: "Not Found" };
 
-  const canonicalPath = `/${slug}`;
+  // Events and restaurants answer on BOTH their vanity subdomain name and
+  // their raw slug (/imexamerica and /imex-america are both live), and each
+  // used to declare itself canonical — two identical pages competing in the
+  // index. Point every variant at the one URL the cards and sitemap use.
+  const canonicalPath =
+    (match.kind === "event"
+      ? eventUrl(match.event)
+      : eventUrl(match.restaurant)) || `/${slug}`;
 
   if (match.kind === "event") {
     if (!match.event.slug) return { title: "Event Not Found" };
@@ -138,7 +171,7 @@ export async function generateMetadata({
     const description = stripHtml(detail?.description) || title;
     const image = ogImageUrl(detail?.image);
     return {
-      title: `${title} | Bayanihan.com`,
+      title,
       description,
       alternates: { canonical: canonicalPath },
       openGraph: {
@@ -167,7 +200,7 @@ export async function generateMetadata({
     name;
   const image = ogImageUrl(detail?.cover || detail?.logo);
   return {
-    title: `${name} | Bayanihan.com`,
+    title: name,
     description,
     alternates: { canonical: canonicalPath },
     openGraph: {
@@ -201,11 +234,33 @@ export default async function SlugPage({
   const match = await resolveMatch(slug);
   if (!match) notFound();
 
-  const canonicalUrl = `${SITE_URL}/${slug}`;
+  // Same preferred URL the canonical tag declares, so the structured data
+  // and the <link rel="canonical"> agree on one address per event.
+  const canonicalUrl = `${SITE_URL}${
+    (match.kind === "event" ? eventUrl(match.event) : eventUrl(match.restaurant)) ||
+    `/${slug}`
+  }`;
 
   if (match.kind === "event") {
     if (!match.event.slug) notFound();
     const initialEvent = await fetchEventDetail(match.event.slug);
+
+    // schema.org needs ISO 8601; the API hands back "September 27, 2026".
+    const schemaStart = toSchemaDate(
+      initialEvent?.eventDate,
+      initialEvent?.startTime
+    );
+    // Only emit endDate when it genuinely falls after the start — some rows
+    // carry an endTime earlier in the day than startTime, and an end before
+    // the start makes the whole Event invalid.
+    const schemaEndCandidate = toSchemaDate(
+      initialEvent?.eventDate,
+      initialEvent?.endTime
+    );
+    const schemaEnd =
+      schemaStart && schemaEndCandidate && schemaEndCandidate > schemaStart
+        ? schemaEndCandidate
+        : undefined;
 
     // Event JSON-LD — server-rendered so it ships in the initial HTML.
     // Spec: https://schema.org/Event
@@ -215,8 +270,8 @@ export default async function SlugPage({
       name: initialEvent?.title || match.event.title,
       description: stripHtml(initialEvent?.description) || undefined,
       image: initialEvent?.image || undefined,
-      startDate:
-        initialEvent?.eventDate || initialEvent?.publishedDate || undefined,
+      startDate: schemaStart,
+      endDate: schemaEnd,
       location: initialEvent?.location
         ? {
             "@type": "Place",

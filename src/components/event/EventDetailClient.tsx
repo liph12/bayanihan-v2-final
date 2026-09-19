@@ -38,6 +38,8 @@ import EventRegistrationForm from "./EventRegistrationForm";
 export interface FetchedEvent {
   id?: string | number;
   title?: string;
+  // Returned by view-event/…; used to confirm a past-event lookup resolved.
+  slug?: string;
   organizer?: string;
   user?: { name?: string };
   eventDate?: string;

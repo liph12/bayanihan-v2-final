@@ -152,9 +152,9 @@ const ORG_SCHEMA = {
 //
 // Spec: https://developers.google.com/search/docs/appearance/structured-data/sitelinks-searchbox
 //
-// The search URL pattern points at a `/search?q=…` route. There's no such
-// route yet — when one exists, this JSON-LD will already be wired up. If
-// the route never lands, Google just won't render the box; nothing breaks.
+// No `potentialAction` here on purpose: a SearchAction has to point at a
+// real search-results URL, and /search?q=… does not exist (it 404s). Add it
+// back together with that route, not before.
 const WEBSITE_SCHEMA = {
   "@context": "https://schema.org",
   "@type": "WebSite",
@@ -164,14 +164,6 @@ const WEBSITE_SCHEMA = {
   description:
     "Bayanihan.com — discover Filipino events, festivals, and restaurants worldwide.",
   publisher: { "@id": `${SITE_URL}#organization` },
-  potentialAction: {
-    "@type": "SearchAction",
-    target: {
-      "@type": "EntryPoint",
-      urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
-    },
-    "query-input": "required name=search_term_string",
-  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
