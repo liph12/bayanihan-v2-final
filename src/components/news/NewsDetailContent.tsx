@@ -428,7 +428,9 @@ export default function NewsDetailContent({
                 sx={{ alignSelf: "flex-start", mb: 1.5, fontWeight: 700 }}
               />
             )}
+            {/* The article headline is the page's only <h1>. */}
             <Typography
+              component="h1"
               sx={{
                 color: "#fff",
                 fontWeight: 800,
@@ -436,6 +438,7 @@ export default function NewsDetailContent({
                 lineHeight: 1.2,
                 textShadow: "0 3px 14px rgba(0,0,0,0.6)",
                 maxWidth: 900,
+                m: 0,
               }}
             >
               {article.title}

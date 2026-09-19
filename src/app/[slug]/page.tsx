@@ -225,6 +225,26 @@ const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL || "https://bayanihan.com"
 ).replace(/\/$/, "");
 
+function breadcrumbJsonLd(
+  section: { name: string; path: string },
+  leaf: { name: string; url: string }
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: section.name,
+        item: `${SITE_URL}${section.path}`,
+      },
+      { "@type": "ListItem", position: 3, name: leaf.name, item: leaf.url },
+    ],
+  };
+}
+
 export default async function SlugPage({
   params,
 }: {
@@ -291,11 +311,20 @@ export default async function SlugPage({
         "https://schema.org/OfflineEventAttendanceMode",
     };
 
+    const crumbs = breadcrumbJsonLd(
+      { name: "Events", path: "/browse-events" },
+      { name: initialEvent?.title || match.event.title || "Event", url: canonicalUrl }
+    );
+
     return (
       <>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(eventJsonLd) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(crumbs) }}
         />
         <EventDetailClient
           realSlug={match.event.slug}
@@ -327,23 +356,31 @@ export default async function SlugPage({
     telephone: initialData?.contact_number || undefined,
     url: canonicalUrl,
     mainEntityOfPage: canonicalUrl,
-    ...(initialData?.rating
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: String(initialData.rating),
-            // ratingCount is unknown from this API; omit so Google doesn't
-            // reject the rich snippet as incomplete.
-          },
-        }
-      : {}),
+    // No aggregateRating on purpose. The API returns rating as the STRING
+    // "0.0" for every restaurant — truthy in JS, so this block used to emit
+    // `ratingValue: "0.0"` with no ratingCount. Google requires a count and
+    // a value inside the rating scale, so that markup was invalid and put
+    // the whole Restaurant item at risk of being ignored. Restore this once
+    // the API returns a real rating plus a review count.
   };
+
+  const restaurantCrumbs = breadcrumbJsonLd(
+    { name: "Restaurants", path: "/restaurant" },
+    {
+      name: initialData?.name || match.restaurant.name || "Restaurant",
+      url: canonicalUrl,
+    }
+  );
 
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantCrumbs) }}
       />
       <RestaurantDetailClient
         restaurantId={match.restaurant.id}

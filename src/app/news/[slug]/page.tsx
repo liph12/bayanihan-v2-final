@@ -147,11 +147,45 @@ export default async function NewsDetailPage({ params }: PageProps) {
     image: article.image_url || undefined,
     datePublished: article.published_at || article.date,
     dateModified: article.updated_at || article.published_at,
+    // Google treats author as required for Article markup, and the API
+    // carries no byline for most posts — fall back to the publication
+    // itself, which is who actually published them.
     author: article.author
       ? { "@type": "Person", name: article.author }
-      : undefined,
+      : { "@type": "Organization", name: "Bayanihan.com", url: siteUrl },
+    publisher: {
+      "@type": "Organization",
+      name: "Bayanihan.com",
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/profile/logo.webp`,
+      },
+    },
     articleSection: article.category || undefined,
     mainEntityOfPage: `${siteUrl}/news/${slug}`,
+  };
+
+  // Matches the breadcrumb trail the page already renders, so Google can
+  // show "Bayanihan.com › News › …" in place of the bare URL.
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: siteUrl },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: "News",
+        item: `${siteUrl}/news`,
+      },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: article.title,
+        item: `${siteUrl}/news/${slug}`,
+      },
+    ],
   };
 
   return (
@@ -159,6 +193,10 @@ export default async function NewsDetailPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <NewsDetailContent
         article={article}

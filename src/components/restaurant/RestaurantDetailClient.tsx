@@ -518,7 +518,9 @@ export default function RestaurantDetailClient({
                 useFlexGap
                 sx={{ mb: 0.6 }}
               >
+                {/* The page's only <h1>. */}
                 <Typography
+                  component="h1"
                   sx={{
                     fontFamily: "Outfit, sans-serif",
                     fontWeight: 900,
@@ -526,6 +528,7 @@ export default function RestaurantDetailClient({
                     fontSize: { xs: "1.5rem", md: "2.1rem" },
                     letterSpacing: "-0.02em",
                     lineHeight: 1.1,
+                    m: 0,
                   }}
                 >
                   {rest.name}

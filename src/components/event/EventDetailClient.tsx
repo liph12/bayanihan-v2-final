@@ -411,9 +411,11 @@ export default function EventDetailClient({
                     mb: 1,
                   }}
                 />
+                {/* The page's only <h1> — visual size stays on variant. */}
                 <Typography
+                  component="h1"
                   variant="h4"
-                  sx={{ fontWeight: 800, lineHeight: 1.2 }}
+                  sx={{ fontWeight: 800, lineHeight: 1.2, m: 0 }}
                 >
                   {event.title}
                 </Typography>
